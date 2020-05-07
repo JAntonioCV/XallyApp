@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_menu"
+        android:icon="@drawable/ic_restaurant_menu"
+        android:title="Agregar Orden" />
+
+    <item
+        android:id="@+id/nav_orden"
+        android:icon="@drawable/ic_shopping_cart"
+        android:title="Detalle Orden" />
+
+    <item
+        android:id="@+id/nav_pedidos"
+        android:icon="@drawable/ic_access_time"
+        android:title="Pedidos" />
+</menu>
