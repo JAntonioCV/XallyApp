@@ -224,52 +224,51 @@ public class Menus extends Fragment {
     //Detalle de orden
     private void detalleOrden(final Menu obj) {
 
-        final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
+        if(!esNuevaOrden(obj))
+        {
+            modificarOrden(obj);
+        }
+        else
+        {
+            final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
-        View view = getLayoutInflater().inflate(R.layout.detalle_orden,null);
-        txtcantidad = view.findViewById(R.id.cantidad);
-        txtnota = view.findViewById(R.id.notaopcional);
+            View view = getLayoutInflater().inflate(R.layout.detalle_orden,null);
+            txtcantidad = view.findViewById(R.id.cantidad);
+            txtnota = view.findViewById(R.id.notaopcional);
 
-        Button ordenar = view.findViewById(R.id.btnordenar);
+            Button ordenar = view.findViewById(R.id.btnordenar);
 
-        ordenar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            ordenar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-                if(!validarCampos())
-                {
-                    return;
-                }
-                else
-                {
-                    DetalleDeOrden detalleDeOrden = new DetalleDeOrden();
-
-                    detalleDeOrden.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
-                    detalleDeOrden.setNota(txtnota.getEditText().getText().toString());
-                    detalleDeOrden.setMenuid(obj.getId());
-                    detalleDeOrden.setOrdenid(1);
-
-                    if(validarOrden(detalleDeOrden,obj))
+                    if(!validarCampos())
                     {
-                        Toast.makeText(rootView.getContext(),"Se ha modificado la orden",Toast.LENGTH_SHORT).show();
+                        return;
                     }
                     else
                     {
-                        Toast.makeText(rootView.getContext(),"Agregado a la orden",Toast.LENGTH_SHORT).show();
+                        //Agregar Orden
+                        DetalleDeOrden detalleDeOrden = new DetalleDeOrden();
+
+                        detalleDeOrden.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
+                        detalleDeOrden.setNota(txtnota.getEditText().getText().toString());
+                        detalleDeOrden.setMenuid(obj.getId());
+                        detalleDeOrden.setOrdenid(1);
+
+                        MainActivity.listadetalle.add(detalleDeOrden);
+
+                        builder.cancel();
                     }
 
-                    builder.cancel();
                 }
+            });
 
+            builder.setView(view);
+            builder.create();
+            builder.show();
 
-
-            }
-        });
-
-        builder.setView(view);
-        builder.create();
-        builder.show();
-
+        }
     }
 
     //detalle del platillo
@@ -311,14 +310,25 @@ public class Menus extends Fragment {
         return isValidate;
     }
 
+    private boolean esNuevaOrden(final Menu obj) {
+
+        for (final DetalleDeOrden detalleActual : MainActivity.listadetalle) {
+
+            if (obj.getId() == detalleActual.getMenuid()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     //Validando si se modifica la orden o se agrega una nueva || aqui deberia mostrar lo que ya tengo que podria ser modificado
-    private boolean validarOrden(final DetalleDeOrden detalleDeOrden, final Menu obj)
+    private void modificarOrden(final Menu obj)
     {
         for(final DetalleDeOrden detalleActual : MainActivity.listadetalle )
         {
-            if(obj.getId()== detalleActual.getMenuid())
+            if(obj.getId() == detalleActual.getMenuid())
             {
-                //abrir el dialogo con los valores cargados
                 final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
                 View view = getLayoutInflater().inflate(R.layout.detalle_orden,null);
@@ -336,22 +346,17 @@ public class Menus extends Fragment {
                     @Override
                     public void onClick(View v) {
 
-                        detalleActual.setCantidad(detalleDeOrden.getCantidad());
-                        detalleActual.setNota(detalleDeOrden.getNota());
+                        detalleActual.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
+                        detalleActual.setNota(txtnota.getEditText().getText().toString());
+                        builder.cancel();
                     }
                 });
 
                 builder.setView(view);
                 builder.create();
                 builder.show();
-
-                return true;
             }
-
         }
-
-        MainActivity.listadetalle.add(detalleDeOrden);
-        return false;
     }
 
 }
