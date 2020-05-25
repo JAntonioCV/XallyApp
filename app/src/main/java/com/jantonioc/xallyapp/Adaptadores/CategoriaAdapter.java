@@ -49,7 +49,6 @@ public class CategoriaAdapter extends RecyclerView.Adapter<CategoriaAdapter.hold
 
     }
 
-
     class holder extends RecyclerView.ViewHolder
     {
         private final View itemView;

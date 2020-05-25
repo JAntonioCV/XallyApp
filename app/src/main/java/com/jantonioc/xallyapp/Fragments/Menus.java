@@ -34,6 +34,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.Categoria;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Menu;
+import com.jantonioc.ln.Receta;
 import com.jantonioc.xallyapp.Adaptadores.MenuAdapter;
 import com.jantonioc.xallyapp.MainActivity;
 import com.jantonioc.xallyapp.R;
@@ -76,8 +77,6 @@ public class Menus extends Fragment {
 
         MenuItem searchitem=menu.findItem(R.id.action_search);
         SearchView searchView= (SearchView) searchitem.getActionView();
-
-
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -271,16 +270,19 @@ public class Menus extends Fragment {
         }
     }
 
+
+
     //detalle del platillo
-    private void detalleMenu(final Menu obj)
+    private void detalleMenu(final Menu menu)
     {
-        final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
-
-        View view = getLayoutInflater().inflate(R.layout.fragment_add_producto,null);
-
-        builder.setView(view);
-        builder.create();
-        builder.show();
+        Fragment fragment = new DetalleMenu();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("Menu",menu);
+        fragment.setArguments(bundle);
+        FragmentTransaction transaction=getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content,fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
 
