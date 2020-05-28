@@ -3,11 +3,13 @@ package com.jantonioc.xallyapp.Fragments;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -79,6 +81,7 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
 
         progressBar= rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
+
         listaCategoria();
 
         return rootView;

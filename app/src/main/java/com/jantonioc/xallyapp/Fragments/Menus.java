@@ -252,6 +252,8 @@ public class Menus extends Fragment {
 
                         detalleDeOrden.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
                         detalleDeOrden.setNota(txtnota.getEditText().getText().toString());
+                        detalleDeOrden.setNombreplatillo(obj.getDescripcion());
+                        detalleDeOrden.setPrecio(obj.getPrecio());
                         detalleDeOrden.setMenuid(obj.getId());
                         detalleDeOrden.setOrdenid(1);
 

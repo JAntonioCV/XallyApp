@@ -18,6 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.xallyapp.Fragments.AddCategoria;
+import com.jantonioc.xallyapp.Fragments.DetalleOrden;
 import com.jantonioc.xallyapp.Fragments.Orden;
 import com.jantonioc.xallyapp.Fragments.SelectCategoria;
 
@@ -50,7 +51,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 else
                 {
-                    Toast.makeText(MainActivity.this,"Mostrando la orden Actual",Toast.LENGTH_SHORT).show();
+                    //abriendo el fragment del detalle si tiene datos
+                    fragment=null;
+                    fragment=new DetalleOrden();
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.replace(R.id.content, fragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+
                 }
 
             }
