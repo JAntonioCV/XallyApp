@@ -40,6 +40,7 @@ public class DetalleOrden extends Fragment {
 
     TextInputLayout txtcantidad;
     TextInputLayout txtnota;
+    TextView txtplatillo;
 
     //FloatingActionButton fabenviar;
     Button btnenviar;
@@ -131,6 +132,8 @@ public class DetalleOrden extends Fragment {
                 final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
                 View view = getLayoutInflater().inflate(R.layout.detalle_orden,null);
+                txtplatillo = view.findViewById(R.id.nombreplatillo);
+                txtplatillo.setText(detalleActual.getNombreplatillo());
                 txtcantidad = view.findViewById(R.id.cantidad);
                 txtnota = view.findViewById(R.id.notaopcional);
 

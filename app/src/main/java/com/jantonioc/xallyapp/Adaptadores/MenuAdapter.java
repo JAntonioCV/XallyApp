@@ -143,15 +143,11 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.holder> implem
 
         private void setMenu(final Menu obj)
         {
-            String descripcio="Antes que puedas encontrar las palabras adecuadas, es importante examinar las diferentes sensaciones relacionadas con la comida específicamente con la apariencia, la textura y el sabor";
+
             TextView nombre =itemView.findViewById(R.id.itemnombre);
             TextView precio =itemView.findViewById(R.id.itemprecio);
-            TextView descripcion = itemView.findViewById(R.id.itemdescripcion);
-
             nombre.setText(obj.getDescripcion());
             precio.setText("Precio: $"+String.valueOf(obj.getPrecio()));
-            descripcion.setText(descripcio);
-
         }
 
     }
