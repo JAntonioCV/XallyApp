@@ -237,6 +237,7 @@ public class Menus extends Fragment {
             txtplatillo = view.findViewById(R.id.nombreplatillo);
             txtplatillo.setText(obj.getDescripcion());
             txtcantidad = view.findViewById(R.id.cantidad);
+            txtcantidad.getEditText().setText("1");
             txtnota = view.findViewById(R.id.notaopcional);
 
             Button ordenar = view.findViewById(R.id.btnordenar);
