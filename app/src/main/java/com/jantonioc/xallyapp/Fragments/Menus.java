@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -62,6 +63,7 @@ public class Menus extends Fragment {
 
     TextInputLayout txtcantidad;
     TextInputLayout txtnota;
+    TextView txtplatillo;
 
 
 
@@ -232,7 +234,10 @@ public class Menus extends Fragment {
             final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
             View view = getLayoutInflater().inflate(R.layout.detalle_orden,null);
+            txtplatillo = view.findViewById(R.id.nombreplatillo);
+            txtplatillo.setText(obj.getDescripcion());
             txtcantidad = view.findViewById(R.id.cantidad);
+            txtcantidad.getEditText().setText("1");
             txtnota = view.findViewById(R.id.notaopcional);
 
             Button ordenar = view.findViewById(R.id.btnordenar);
@@ -338,7 +343,8 @@ public class Menus extends Fragment {
                 View view = getLayoutInflater().inflate(R.layout.detalle_orden,null);
                 txtcantidad = view.findViewById(R.id.cantidad);
                 txtnota = view.findViewById(R.id.notaopcional);
-
+                txtplatillo = view.findViewById(R.id.nombreplatillo);
+                txtplatillo.setText(obj.getDescripcion());
                 txtcantidad.getEditText().setText(String.valueOf(detalleActual.getCantidad()));
                 txtnota.getEditText().setText(detalleActual.getNota());
 

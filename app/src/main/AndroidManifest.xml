@@ -15,10 +15,10 @@
         android:theme="@style/AppTheme.NoActionBar">
         <activity android:name=".Login"
             android:theme="@style/SplashTheme">
-
         </activity>
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
             android:theme="@style/AppTheme.NoActionBar.NoActionBar">
 
             <intent-filter>
