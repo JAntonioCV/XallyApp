@@ -252,7 +252,7 @@ public class Menus extends Fragment {
                     }
                     else
                     {
-                        //Agregar Orden
+                        //Agregar Ordenes
                         DetalleDeOrden detalleDeOrden = new DetalleDeOrden();
 
                         detalleDeOrden.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));

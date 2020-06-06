@@ -27,6 +27,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Menu;
+import com.jantonioc.ln.Orden;
 import com.jantonioc.xallyapp.Adaptadores.DetalleOrdenAdapter;
 import com.jantonioc.xallyapp.MainActivity;
 import com.jantonioc.xallyapp.R;
@@ -68,7 +69,7 @@ public class DetalleOrden extends Fragment {
                              Bundle savedInstanceState) {
 
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Detalle Orden");
+        toolbar.setTitle("Detalle Ordenes");
 
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
@@ -90,7 +91,7 @@ public class DetalleOrden extends Fragment {
             @Override
             public void onClick(View v) {
                 Toast.makeText(rootView.getContext(), "Enviando", Toast.LENGTH_SHORT).show();
-                enviarOrden(MainActivity.listadetalle);
+                enviarOrden(MainActivity.listadetalle, MainActivity.orden);
             }
         });
 
@@ -104,7 +105,7 @@ public class DetalleOrden extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                Toast.makeText(rootView.getContext(), "Eliminado de la Orden", Toast.LENGTH_SHORT).show();
+                Toast.makeText(rootView.getContext(), "Eliminado de la Ordenes", Toast.LENGTH_SHORT).show();
                 int position = viewHolder.getAdapterPosition();
                 MainActivity.listadetalle.remove(position);
                 total.setText("$" + Double.valueOf(calcularTotal(MainActivity.listadetalle)).toString());
@@ -179,7 +180,20 @@ public class DetalleOrden extends Fragment {
         return total;
     }
 
-    public void enviarOrden(List<DetalleDeOrden> detalleDeOrdenes) {
+    public void enviarOrden(List<DetalleDeOrden> detalleDeOrdenes, Orden orden) {
+
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("codigo",orden.getCodigo());
+            jsonObject.put("fechaorden",orden.getFechaOrden());
+            jsonObject.put("tiempoorden",orden.getTiempoOrden());
+            jsonObject.put("estado",Boolean.valueOf(orden.getEstado()).toString());
+
+        }catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
 
         JSONArray jsonArray = new JSONArray();
 
@@ -203,7 +217,8 @@ public class DetalleOrden extends Fragment {
         JSONObject ordenesObject = new JSONObject();
         try {
 
-            ordenesObject.put("",jsonArray);
+            ordenesObject.put("ordenWS",jsonObject);
+            ordenesObject.put("detallesWS",jsonArray);
 
         }catch (JSONException e)
         {
@@ -221,6 +236,7 @@ public class DetalleOrden extends Fragment {
 
                     if (resultado) {
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
+
 
                     } else {
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();

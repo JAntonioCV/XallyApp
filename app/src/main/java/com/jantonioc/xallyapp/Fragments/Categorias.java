@@ -28,6 +28,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.Categoria;
 import com.jantonioc.ln.DetalleDeOrden;
+import com.jantonioc.ln.Menu;
+import com.jantonioc.ln.Orden;
 import com.jantonioc.xallyapp.Adaptadores.CategoriaAdapter;
 import com.jantonioc.xallyapp.R;
 import com.jantonioc.xallyapp.VolleySingleton;
@@ -45,15 +47,10 @@ import java.util.List;
  */
 public class Categorias extends Fragment implements CategoriaAdapter.Evento {
 
-     View rootView;
-     RecyclerView lista;
-     List<Categoria>  listacategorias;
-     ProgressBar progressBar;
-
-    TextInputLayout txtcodigo;
-    TextInputLayout txtfecha;
-    TextInputLayout txthora;
-
+    View rootView;
+    RecyclerView lista;
+    List<Categoria> listacategorias;
+    ProgressBar progressBar;
 
     public Categorias() {
         // Required empty public constructor
@@ -65,7 +62,7 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
-        Toolbar toolbar=getActivity().findViewById(R.id.toolbar);
+        Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
         toolbar.setTitle("Categoria");
 
         //Mostrnado el fab
@@ -79,7 +76,7 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
 
-        progressBar= rootView.findViewById(R.id.progressBar);
+        progressBar = rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
         listaCategoria();
@@ -90,33 +87,31 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
     @Override
     public void selecionar(Categoria obj) {
 
-        Bundle bundle= new Bundle();
-        bundle.putInt("IdCategoria",obj.getId());
+        Bundle bundle = new Bundle();
+        bundle.putInt("IdCategoria", obj.getId());
 
         Fragment fragment = new Menus();
         fragment.setArguments(bundle);
 
-        FragmentTransaction transaction=getActivity().getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.content,fragment);
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
-    public void listaCategoria()
-    {
-        listacategorias=new ArrayList<>();
+    public void listaCategoria() {
+        listacategorias = new ArrayList<>();
 
-        String uri="http://xally.somee.com/Xally/API/CategoriasWS/Categorias";
-        StringRequest request= new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
+        String uri = "http://xally.somee.com/Xally/API/CategoriasWS/Categorias";
+        StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
 
-                    JSONArray jsonArray= new JSONArray(response);
+                    JSONArray jsonArray = new JSONArray(response);
 
-                    for (int i=0;i<jsonArray.length();i++)
-                    {
-                        JSONObject obj= jsonArray.getJSONObject(i);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject obj = jsonArray.getJSONObject(i);
 
                         Categoria categoria = new Categoria(
                                 obj.getInt("id"),
@@ -128,13 +123,11 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
                         listacategorias.add(categoria);
                     }
 
-                    if(listacategorias.size()>0) {
+                    if (listacategorias.size() > 0) {
                         progressBar.setVisibility(View.GONE);
-                        CategoriaAdapter adapter= new CategoriaAdapter(listacategorias, Categorias.this);
+                        CategoriaAdapter adapter = new CategoriaAdapter(listacategorias, Categorias.this);
                         lista.setAdapter(adapter);
-                    }
-                    else
-                    {
+                    } else {
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(rootView.getContext(), "No existen Categorias para mostrar", Toast.LENGTH_SHORT).show();
                     }
@@ -151,19 +144,13 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG ).show();
+                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
 
             }
         });
 
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
     }
-
-
-
-
-
-
 
 
 }
