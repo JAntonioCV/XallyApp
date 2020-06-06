@@ -186,9 +186,9 @@ public class DetalleOrden extends Fragment {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("codigo",orden.getCodigo());
-            jsonObject.put("fechaorden",orden.getFechaOrden());
-            jsonObject.put("tiempoorden",orden.getTiempoOrden());
-            jsonObject.put("estado",Boolean.valueOf(orden.getEstado()).toString());
+            jsonObject.put("fechaorden",orden.getFechaorden());
+            jsonObject.put("tiempoorden",orden.getTiempoorden());
+            jsonObject.put("estado",Boolean.valueOf(orden.isEstado()).toString());
 
         }catch (JSONException e)
         {

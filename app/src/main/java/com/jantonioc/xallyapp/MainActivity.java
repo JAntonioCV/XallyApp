@@ -17,9 +17,10 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.jantonioc.ln.DetalleDeOrden;
+import com.jantonioc.ln.Orden;
 import com.jantonioc.xallyapp.Fragments.AddCategoria;
 import com.jantonioc.xallyapp.Fragments.DetalleOrden;
-import com.jantonioc.xallyapp.Fragments.Orden;
+import com.jantonioc.xallyapp.Fragments.Ordenes;
 import com.jantonioc.xallyapp.Fragments.SelectCategoria;
 
 import java.util.ArrayList;
@@ -28,7 +29,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     Fragment fragment = null;
-    public static final List<DetalleDeOrden> listadetalle= new ArrayList<>();
+    public static List<DetalleDeOrden> listadetalle= new ArrayList<>();
+    public static Orden orden = new Orden();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        fragment = new Orden();
+        fragment = new Ordenes();
 
         cargarFragment(fragment);
 
@@ -121,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case 1:
                 case R.id.nav_menu:
-                fragment = new Orden();
+                fragment = new Ordenes();
                 break;
             case 2:
                 case R.id.nav_orden:
