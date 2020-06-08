@@ -1,6 +1,7 @@
 package com.jantonioc.xallyapp.Fragments;
 
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -87,13 +88,22 @@ public class DetalleOrden extends Fragment {
 
         btnenviar = rootView.findViewById(R.id.btnenviar);
 
-        btnenviar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(rootView.getContext(), "Enviando", Toast.LENGTH_SHORT).show();
-                enviarOrden(MainActivity.listadetalle, MainActivity.orden);
-            }
-        });
+
+        if (MainActivity.listadetalle.size() > 0) {
+
+            btnenviar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(rootView.getContext(), "Enviando", Toast.LENGTH_SHORT).show();
+                    enviarOrden(MainActivity.listadetalle, MainActivity.orden);
+                }
+            });
+
+        } else {
+
+            Toast.makeText(rootView.getContext(), "Enviando", Toast.LENGTH_SHORT).show();
+            btnenviar.setEnabled(false);
+        }
 
         //swipe to delete
 
@@ -104,13 +114,33 @@ public class DetalleOrden extends Fragment {
             }
 
             @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                Toast.makeText(rootView.getContext(), "Eliminado de la Ordenes", Toast.LENGTH_SHORT).show();
-                int position = viewHolder.getAdapterPosition();
-                MainActivity.listadetalle.remove(position);
-                total.setText("$" + Double.valueOf(calcularTotal(MainActivity.listadetalle)).toString());
-                adapter.notifyDataSetChanged();
+            public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
 
+                final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+                builder.setTitle("Eliminar Detalle");
+                builder.setMessage("¿Desea eliminar el detalle para esta orden?");
+
+                builder.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(rootView.getContext(), "Eliminado de la Orden", Toast.LENGTH_SHORT).show();
+                        int position = viewHolder.getAdapterPosition();
+                        MainActivity.listadetalle.remove(position);
+                        total.setText("$" + Double.valueOf(calcularTotal(MainActivity.listadetalle)).toString());
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+
+                builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        adapter.notifyItemChanged(viewHolder.getAdapterPosition());
+                    }
+                });
+
+                builder.create();
+                builder.show();
             }
         };
 
@@ -185,13 +215,12 @@ public class DetalleOrden extends Fragment {
 
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("codigo",orden.getCodigo());
-            jsonObject.put("fechaorden",orden.getFechaorden());
-            jsonObject.put("tiempoorden",orden.getTiempoorden());
-            jsonObject.put("estado",Boolean.valueOf(orden.isEstado()).toString());
+            jsonObject.put("codigo", orden.getCodigo());
+            jsonObject.put("fechaorden", orden.getFechaorden());
+            jsonObject.put("tiempoorden", orden.getTiempoorden());
+            jsonObject.put("estado", Boolean.valueOf(orden.isEstado()).toString());
 
-        }catch (JSONException e)
-        {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
@@ -205,7 +234,6 @@ public class DetalleOrden extends Fragment {
                 ordenes.put("notaorden", detalleActual.getNota().isEmpty() ? "Sin nota" : detalleActual.getNota());
                 ordenes.put("estado", "true");
                 ordenes.put("menuid", String.valueOf(detalleActual.getMenuid()));
-                ordenes.put("ordenid", String.valueOf(detalleActual.getOrdenid()));
 
                 jsonArray.put(ordenes);
 
@@ -217,16 +245,15 @@ public class DetalleOrden extends Fragment {
         JSONObject ordenesObject = new JSONObject();
         try {
 
-            ordenesObject.put("ordenWS",jsonObject);
-            ordenesObject.put("detallesWS",jsonArray);
+            ordenesObject.put("ordenWS", jsonObject);
+            ordenesObject.put("detallesWS", jsonArray);
 
-        }catch (JSONException e)
-        {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
         String uri = "http://xally.somee.com/Xally/API/DetallesDeOrdenWS/OrdenesDetalle";
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, uri,ordenesObject, new Response.Listener<JSONObject>() {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, uri, ordenesObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
