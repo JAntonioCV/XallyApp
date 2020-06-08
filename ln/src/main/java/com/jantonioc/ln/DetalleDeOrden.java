@@ -9,7 +9,6 @@ public class DetalleDeOrden implements Serializable {
     private String nota;
     private String nombreplatillo;
     private double precio;
-    private int ordenid;
     private int menuid;
 
     public DetalleDeOrden() {
@@ -20,7 +19,6 @@ public class DetalleDeOrden implements Serializable {
         this.cantidad = cantidad;
         this.nota = nota;
         this.nombreplatillo = nombreplatillo;
-        this.ordenid = ordenid;
         this.menuid = menuid;
     }
 
@@ -59,14 +57,6 @@ public class DetalleDeOrden implements Serializable {
     public double getPrecio() { return precio; }
 
     public void setPrecio(double precio) { this.precio = precio; }
-
-    public int getOrdenid() {
-        return ordenid;
-    }
-
-    public void setOrdenid(int ordenid) {
-        this.ordenid = ordenid;
-    }
 
     public int getMenuid() {
         return menuid;

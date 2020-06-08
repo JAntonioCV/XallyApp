@@ -260,7 +260,6 @@ public class Menus extends Fragment {
                         detalleDeOrden.setNombreplatillo(obj.getDescripcion());
                         detalleDeOrden.setPrecio(obj.getPrecio());
                         detalleDeOrden.setMenuid(obj.getId());
-                        detalleDeOrden.setOrdenid(1);
 
                         MainActivity.listadetalle.add(detalleDeOrden);
 
