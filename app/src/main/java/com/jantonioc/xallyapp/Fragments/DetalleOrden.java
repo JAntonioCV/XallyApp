@@ -3,22 +3,21 @@ package com.jantonioc.xallyapp.Fragments;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -27,7 +26,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.DetalleDeOrden;
-import com.jantonioc.ln.Menu;
 import com.jantonioc.ln.Orden;
 import com.jantonioc.xallyapp.Adaptadores.DetalleOrdenAdapter;
 import com.jantonioc.xallyapp.MainActivity;
@@ -38,26 +36,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class DetalleOrden extends Fragment {
 
-    View rootView;
-    RecyclerView lista;
-    DetalleOrdenAdapter adapter;
+    private View rootView;
+    private RecyclerView lista;
+    private DetalleOrdenAdapter adapter;
 
-    TextInputLayout txtcantidad;
-    TextInputLayout txtnota;
-    TextView txtplatillo;
+    private TextInputLayout txtcantidad;
+    private TextInputLayout txtnota;
+    private TextView txtplatillo;
 
     //FloatingActionButton fabenviar;
-    Button btnenviar;
-    TextView total;
+    private Button btnenviar;
+    private TextView total;
 
 
     public DetalleOrden() {
@@ -84,11 +80,11 @@ public class DetalleOrden extends Fragment {
 
         total = rootView.findViewById(R.id.total);
 
+        //Calcular el total
         total.setText("$" + Double.valueOf(calcularTotal(MainActivity.listadetalle)).toString());
 
+        //Validar si la lista tiene datos envia si no, muestra un mensaje
         btnenviar = rootView.findViewById(R.id.btnenviar);
-
-
         if (MainActivity.listadetalle.size() > 0) {
 
             btnenviar.setOnClickListener(new View.OnClickListener() {
@@ -101,7 +97,7 @@ public class DetalleOrden extends Fragment {
 
         } else {
 
-            Toast.makeText(rootView.getContext(), "Enviando", Toast.LENGTH_SHORT).show();
+            Toast.makeText(rootView.getContext(), "El Detalle esta vacio", Toast.LENGTH_SHORT).show();
             btnenviar.setEnabled(false);
         }
 
@@ -116,6 +112,7 @@ public class DetalleOrden extends Fragment {
             @Override
             public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
 
+                //Mostrar un dialog
                 final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
                 builder.setTitle("Eliminar Detalle");
@@ -124,6 +121,7 @@ public class DetalleOrden extends Fragment {
                 builder.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        //Si confirma se borra de la lista del detalle y se calcula el total
                         Toast.makeText(rootView.getContext(), "Eliminado de la Orden", Toast.LENGTH_SHORT).show();
                         int position = viewHolder.getAdapterPosition();
                         MainActivity.listadetalle.remove(position);
@@ -135,6 +133,7 @@ public class DetalleOrden extends Fragment {
                 builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        //si lo cancela se cierra y vuelve el detalle eliminado por el swipe
                         adapter.notifyItemChanged(viewHolder.getAdapterPosition());
                     }
                 });
@@ -144,30 +143,41 @@ public class DetalleOrden extends Fragment {
             }
         };
 
+        //heleper para el reciclerview
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(lista);
 
+        //lista el detalle de orden en el recyclerview
         listaDetalleDeOrden();
 
         return rootView;
     }
 
+    //lista y adapta las ordenes
     private void listaDetalleDeOrden() {
+
+        //Adapta las lista de detalles
         adapter = new DetalleOrdenAdapter(MainActivity.listadetalle);
+        //evento click cuando se modifica un detalle
         adapter.setClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //metodo para modificar
                 modificardetalle(MainActivity.listadetalle.get(lista.getChildAdapterPosition(v)));
             }
         });
 
+        //adaptamos la lista
         lista.setAdapter(adapter);
     }
 
     //Validando si se modifica la orden o se agrega una nueva || aqui deberia mostrar lo que ya tengo que podria ser modificado
     private void modificardetalle(final DetalleDeOrden detalleDeOrden) {
+
         for (final DetalleDeOrden detalleActual : MainActivity.listadetalle) {
+
             if (detalleDeOrden.getMenuid() == detalleActual.getMenuid()) {
+
                 final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
                 View view = getLayoutInflater().inflate(R.layout.detalle_orden, null);
@@ -201,6 +211,7 @@ public class DetalleOrden extends Fragment {
         }
     }
 
+    //Calclulamos el total del detalle para la orden
     private double calcularTotal(List<DetalleDeOrden> detalleDeOrdens) {
         double total = 0;
 
@@ -210,9 +221,11 @@ public class DetalleOrden extends Fragment {
         return total;
     }
 
-    public void enviarOrden(List<DetalleDeOrden> detalleDeOrdenes, Orden orden) {
+    //enviamos la orden al servidor
+    private void enviarOrden(List<DetalleDeOrden> detalleDeOrdenes, Orden orden) {
 
 
+        //Creamos el objeto de la orden :v
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("codigo", orden.getCodigo());
@@ -224,17 +237,23 @@ public class DetalleOrden extends Fragment {
             e.printStackTrace();
         }
 
+        //Creamos el Array de los detalles de ordenes
         JSONArray jsonArray = new JSONArray();
 
+        //Recorremos las lista de detalles y la agregamos al array
         for (DetalleDeOrden detalleActual : detalleDeOrdenes) {
             try {
 
+                //objeto donde se guardara una orden
                 JSONObject ordenes = new JSONObject();
+
+                //Guardando datos del detalle de orden
                 ordenes.put("cantidadorden", String.valueOf(detalleActual.getCantidad()));
                 ordenes.put("notaorden", detalleActual.getNota().isEmpty() ? "Sin nota" : detalleActual.getNota());
                 ordenes.put("estado", "true");
                 ordenes.put("menuid", String.valueOf(detalleActual.getMenuid()));
 
+                //ingresamos el objeto al array
                 jsonArray.put(ordenes);
 
             } catch (JSONException e) {
@@ -242,9 +261,12 @@ public class DetalleOrden extends Fragment {
             }
         }
 
+        //Creando un nuevo objeto para guardar el array y el object
         JSONObject ordenesObject = new JSONObject();
+
         try {
 
+            //les asginamos un nombre para que los pueda reconocer la api
             ordenesObject.put("ordenWS", jsonObject);
             ordenesObject.put("detallesWS", jsonArray);
 
@@ -252,22 +274,27 @@ public class DetalleOrden extends Fragment {
             e.printStackTrace();
         }
 
+        //Enviar la orden al server
         String uri = "http://xally.somee.com/Xally/API/DetallesDeOrdenWS/OrdenesDetalle";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, uri, ordenesObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
 
+                    //respuesta de parte del servidor
                     String mensaje = response.getString("Mensaje");
                     Boolean resultado = response.getBoolean("Resultado");
 
                     if (resultado) {
+                        //segun yo abre el fragmento de las ordenes
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
-
+                        Fragment fragment = new Ordenes();
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.content, fragment);
+                        transaction.commit();
 
                     } else {
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
-
                     }
 
                 } catch (JSONException ex) {

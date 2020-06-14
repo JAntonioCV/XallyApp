@@ -9,16 +9,18 @@ public class Menu implements Serializable {
     private String descripcion;
     private double precio;
     private boolean estado;
+    private int idcategoria;
 
     public Menu() {
     }
 
-    public Menu(int id, String codigo, String descripcion, double precio, boolean estado) {
+    public Menu(int id, String codigo, String descripcion, double precio, boolean estado, int idcategoria) {
         this.id = id;
         this.codigo = codigo;
         this.descripcion = descripcion;
         this.precio = precio;
         this.estado = estado;
+        this.idcategoria = idcategoria;
     }
 
     public int getId() {
@@ -60,4 +62,13 @@ public class Menu implements Serializable {
     public void setEstado(boolean estado) {
         this.estado = estado;
     }
+
+    public int getIdcategoria() {
+        return idcategoria;
+    }
+
+    public void setIdcategoria(int idcategoria) {
+        this.idcategoria = idcategoria;
+    }
+
 }

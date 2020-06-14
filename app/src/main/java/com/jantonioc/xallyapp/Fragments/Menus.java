@@ -1,8 +1,6 @@
 package com.jantonioc.xallyapp.Fragments;
 
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,7 +14,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -32,10 +29,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
-import com.jantonioc.ln.Categoria;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Menu;
-import com.jantonioc.ln.Receta;
 import com.jantonioc.xallyapp.Adaptadores.MenuAdapter;
 import com.jantonioc.xallyapp.MainActivity;
 import com.jantonioc.xallyapp.R;
@@ -53,18 +48,17 @@ import java.util.List;
  */
 public class Menus extends Fragment {
 
-    View rootView;
-    RecyclerView lista;
-    List<Menu> listamenu;
-    SearchView searchView;
-    MenuAdapter adapter;
-    ProgressBar progressBar;
-    int idcategoria;
+    private View rootView;
+    private RecyclerView lista;
+    private List<Menu> listamenu;
+    private SearchView searchView;
+    private MenuAdapter adapter;
+    private ProgressBar progressBar;
+    private int idcategoria;
 
-    TextInputLayout txtcantidad;
-    TextInputLayout txtnota;
-    TextView txtplatillo;
-
+    private TextInputLayout txtcantidad;
+    private TextInputLayout txtnota;
+    private TextView txtplatillo;
 
 
     public Menus() {
@@ -75,11 +69,15 @@ public class Menus extends Fragment {
     @Override
     public void onCreateOptionsMenu(android.view.Menu menu, MenuInflater inflater) {
 
-        inflater.inflate(R.menu.toolbar_menu,menu);
+        inflater.inflate(R.menu.toolbar_menu, menu);
 
-        MenuItem searchitem=menu.findItem(R.id.action_search);
-        SearchView searchView= (SearchView) searchitem.getActionView();
+        //Menu item para buscar
+        MenuItem searchitem = menu.findItem(R.id.action_search);
 
+        //vista del searchView del buscador
+        searchView = (SearchView) searchitem.getActionView();
+
+        //evento del cambio de texto en el buscador
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -93,7 +91,8 @@ public class Menus extends Fragment {
             }
         });
 
-      EditText editText=searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        //Cambiar el texto y colores por defecto por otro
+        EditText editText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
         editText.setHint(getResources().getString(R.string.search_hint));
         editText.setHintTextColor(Color.WHITE);
         editText.setTextColor(Color.WHITE);
@@ -102,16 +101,10 @@ public class Menus extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Toolbar toolbar=getActivity().findViewById(R.id.toolbar);
+        Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
         toolbar.setTitle("Menu");
 
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
@@ -125,41 +118,49 @@ public class Menus extends Fragment {
         progressBar = rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
-        idcategoria= getArguments().getInt("IdCategoria", 0);
+        //Obteniendo la id de la categoria selecionada
+        idcategoria = getArguments().getInt("IdCategoria", 0);
 
+        //Listando el menu por id de la cstegoria
         listaMenu(idcategoria);
 
         return rootView;
     }
 
-    public void listaMenu(final int idcategoria)
-    {
-        listamenu=new ArrayList<>();
+    //obteniendo la lista del menu desde el servidor
+    private void listaMenu(final int idcategoria) {
+        listamenu = new ArrayList<>();
 
-        String uri="http://xally.somee.com/Xally/API/MenusWS/MenusCategoria/"+idcategoria;
-        StringRequest request= new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
+        String uri = "http://xally.somee.com/Xally/API/MenusWS/MenusCategoria/" + idcategoria;
+        StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
 
-                    JSONArray jsonArray= new JSONArray(response);
+                    //obteniendo el arreglo desde la respuesta
+                    JSONArray jsonArray = new JSONArray(response);
 
-                    for (int i=0;i<jsonArray.length();i++)
-                    {
-                        JSONObject obj= jsonArray.getJSONObject(i);
+                    //Recorriendo el arreglo paara obtener los objetos
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        //Obteniendo los objetos
+                        JSONObject obj = jsonArray.getJSONObject(i);
 
+                        //Obteniendo los datos y convirtiendolos a menu
                         Menu menu = new Menu(
                                 obj.getInt("id"),
                                 obj.getString("codigo"),
                                 obj.getString("descripcion"),
                                 obj.getDouble("precio"),
-                                obj.getBoolean("estado")
+                                obj.getBoolean("estado"),
+                                obj.getInt("idcategoria")
                         );
 
+                        //Agregando a la lista del menu
                         listamenu.add(menu);
                     }
 
-                    if(listamenu.size()>0) {
+                    //Si la lista es mayor que 0 adaptamos y hacemos el evento on click y long Click del la lista
+                    if (listamenu.size() > 0) {
 
                         progressBar.setVisibility(View.GONE);
 
@@ -177,26 +178,28 @@ public class Menus extends Fragment {
                         adapter.setLongClickListener(new View.OnLongClickListener() {
                             @Override
                             public boolean onLongClick(View v) {
-                               detalleMenu(listamenu.get(lista.getChildAdapterPosition(v)));
+                                detalleMenu(listamenu.get(lista.getChildAdapterPosition(v)));
                                 return true;
                             }
                         });
 
                         lista.setAdapter(adapter);
+
                     }
-                    else
-                    {
+                    //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
+                    else {
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(rootView.getContext(), "Esta categoria no posee productos", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
-                        for(int i = 0; i < fm.getBackStackEntryCount(); ++i) {
+                        for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
                             fm.popBackStack();
                         }
 
                         Fragment fragment = new Categorias();
-                        FragmentTransaction transaction=getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.content,fragment);
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.content, fragment);
+                        transaction.addToBackStack(null);
                         transaction.commit();
                     }
 
@@ -212,7 +215,7 @@ public class Menus extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG ).show();
+                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
 
             }
         });
@@ -222,18 +225,19 @@ public class Menus extends Fragment {
     }
 
 
-    //Detalle de orden
+    //Detalle de orden pasamos el objeto
+
     private void detalleOrden(final Menu obj) {
 
-        if(!esNuevaOrden(obj))
-        {
+        //Consultamos si es una nueva o una existente
+        if (!esNuevaOrden(obj)) {
+            //Abrimos la modal para modificar la orden para evitar que se agregen 2 productos del mismo en la lista
             modificarOrden(obj);
-        }
-        else
-        {
+        } else {
+            //Abrimos la modal agregar el nuevo detalle de orden
             final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
-            View view = getLayoutInflater().inflate(R.layout.detalle_orden,null);
+            View view = getLayoutInflater().inflate(R.layout.detalle_orden, null);
             txtplatillo = view.findViewById(R.id.nombreplatillo);
             txtplatillo.setText(obj.getDescripcion());
             txtcantidad = view.findViewById(R.id.cantidad);
@@ -246,15 +250,12 @@ public class Menus extends Fragment {
                 @Override
                 public void onClick(View v) {
 
-                    if(!validarCampos())
-                    {
+                    //Validamos que los campos no esten vacios o incumplan
+                    if (!validarCampos()) {
                         return;
-                    }
-                    else
-                    {
+                    } else {
                         //Agregar Ordenes
                         DetalleDeOrden detalleDeOrden = new DetalleDeOrden();
-
                         detalleDeOrden.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
                         detalleDeOrden.setNota(txtnota.getEditText().getText().toString());
                         detalleDeOrden.setNombreplatillo(obj.getDescripcion());
@@ -263,6 +264,7 @@ public class Menus extends Fragment {
 
                         MainActivity.listadetalle.add(detalleDeOrden);
 
+                        //Para que se cierre automaticamente al darla guardar
                         builder.cancel();
                     }
 
@@ -277,40 +279,37 @@ public class Menus extends Fragment {
     }
 
 
-
     //detalle del platillo
-    private void detalleMenu(final Menu menu)
-    {
+    private void detalleMenu(final Menu menu) {
+        //Abrir el fragmento del detalle de los platillos
         Fragment fragment = new DetalleMenu();
+        //Pasar parametros entre fragment
         Bundle bundle = new Bundle();
-        bundle.putSerializable("Menu",menu);
+        //mandar el objeto serializado
+        bundle.putSerializable("Menu", menu);
         fragment.setArguments(bundle);
-        FragmentTransaction transaction=getActivity().getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.content,fragment);
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
 
     //Validando que no esten los campos vacios
-    private boolean validarCampos()
-    {
-        boolean isValidate=true;
+    private boolean validarCampos() {
+        boolean isValidate = true;
 
         String cantidadInput = txtcantidad.getEditText().getText().toString().trim();
 
-        if(cantidadInput.isEmpty())
-        {
-            isValidate=false;
+        if (cantidadInput.isEmpty()) {
+            isValidate = false;
             txtcantidad.setError("Cantidad no puede estar vacio");
 
-        }else if(Integer.valueOf(cantidadInput)<=0)
-        {
-            isValidate=false;
+        } else if (Integer.valueOf(cantidadInput) <= 0) {
+            isValidate = false;
             txtcantidad.setError("La cantidad no puede ser menor a 1");
 
-        }else
-        {
+        } else {
             txtcantidad.setError(null);
         }
 
@@ -318,6 +317,7 @@ public class Menus extends Fragment {
         return isValidate;
     }
 
+    //Validar el tipo de orden modificar || nueva
     private boolean esNuevaOrden(final Menu obj) {
 
         for (final DetalleDeOrden detalleActual : MainActivity.listadetalle) {
@@ -331,15 +331,15 @@ public class Menus extends Fragment {
 
 
     //Validando si se modifica la orden o se agrega una nueva || aqui deberia mostrar lo que ya tengo que podria ser modificado
-    private void modificarOrden(final Menu obj)
-    {
-        for(final DetalleDeOrden detalleActual : MainActivity.listadetalle )
-        {
-            if(obj.getId() == detalleActual.getMenuid())
-            {
+    private void modificarOrden(final Menu obj) {
+        //recorrer la lista en busca de un objeto que coincida con la busqueda dentro de la lista y el seleeccionado
+        for (final DetalleDeOrden detalleActual : MainActivity.listadetalle) {
+
+            //si tiene uno pedir los nuevos datos
+            if (obj.getId() == detalleActual.getMenuid()) {
                 final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
-                View view = getLayoutInflater().inflate(R.layout.detalle_orden,null);
+                View view = getLayoutInflater().inflate(R.layout.detalle_orden, null);
                 txtcantidad = view.findViewById(R.id.cantidad);
                 txtnota = view.findViewById(R.id.notaopcional);
                 txtplatillo = view.findViewById(R.id.nombreplatillo);
@@ -355,6 +355,7 @@ public class Menus extends Fragment {
                     @Override
                     public void onClick(View v) {
 
+                        //modifiamos el detalle para que se guarden los nuevos datos
                         detalleActual.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
                         detalleActual.setNota(txtnota.getEditText().getText().toString());
                         builder.cancel();

@@ -37,11 +37,11 @@ import org.json.JSONObject;
  */
 public class DetalleMenu extends Fragment {
 
-    View rootView;
-    ListView lista;
-    TextView nombre, precio, tiempo;
-    ProgressBar progressBar;
-    CardView cardinfo,cardingre;
+    private View rootView;
+    private ListView lista;
+    private TextView nombre, precio, tiempo;
+    private ProgressBar progressBar;
+    private CardView cardinfo,cardingre;
 
 
     public DetalleMenu() {
@@ -53,9 +53,11 @@ public class DetalleMenu extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        //Cambiar el toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
         toolbar.setTitle("Detalle Menu");
 
+        //ocultar el boton flotante
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
@@ -72,23 +74,25 @@ public class DetalleMenu extends Fragment {
         tiempo = rootView.findViewById(R.id.itemtiempo);
         progressBar = rootView.findViewById(R.id.progressBar);
 
-
+        //Ocultando las csrd para que se muestren hasta que se cargien los datos
         cardinfo.setVisibility(View.GONE);
         cardingre.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
 
 
+        //obtenemos el objeto menu serializado
         Bundle bundle = getArguments();
         Menu menu = (Menu) bundle.getSerializable("Menu");
 
 
+        //por el id del menu
         detalleMenu(menu);
 
         return rootView;
     }
 
     //obtener informacion de los platillos
-    public void detalleMenu(final Menu menu) {
+    private void detalleMenu(final Menu menu) {
 
         String uri = "http://xally.somee.com/Xally/API/RecetasWS/RecetaPorPlatillo/" + menu.getId();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
@@ -96,28 +100,35 @@ public class DetalleMenu extends Fragment {
             public void onResponse(String response) {
                 try {
 
+                    //Obteniendo la informacion del array de los platillos
                     JSONArray jsonArray = new JSONArray(response);
 
-                    JSONObject obj = jsonArray.getJSONObject(0);
+                    if(jsonArray.length() != 0)
+                    {
+                        //Obteniendo la informacion del objeto
+                        JSONObject obj = jsonArray.getJSONObject(0);
 
-                    Receta receta = new Receta(
-                            obj.getInt("id"),
-                            obj.getString("descripcion"),
-                            obj.getString("tiempoEstimado"),
-                            obj.getBoolean("estado"),
-                            obj.getString("ingrediente")
-                    );
+                        //Agregando el objeto a la clase
+                        Receta receta = new Receta(
+                                obj.getInt("id"),
+                                obj.getString("descripcion"),
+                                obj.getString("tiempoEstimado"),
+                                obj.getBoolean("estado"),
+                                obj.getString("ingrediente")
+                        );
 
-                    if (receta != null) {
-
+                        //Hacemos visibles las cards
                         cardinfo.setVisibility(View.VISIBLE);
                         cardingre.setVisibility(View.VISIBLE);
 
                         progressBar.setVisibility(View.GONE);
+
+                        //Mandamos la informacion
                         nombre.setText(menu.getDescripcion());
                         precio.setText("Precio: " + Double.valueOf(menu.getPrecio()).toString() + " $");
                         tiempo.setText("Tiempo estimado: " + receta.getTiempoEstimado() + " minutos");
 
+                        //Creamos un arreglo de los ingredientes y los adaptamos a una lista
                         String[] ingredientes = receta.getIngrediente().split(";");
 
                         ArrayAdapter adapter = new ArrayAdapter<String>(rootView.getContext(), android.R.layout.simple_list_item_1, ingredientes);
@@ -129,17 +140,25 @@ public class DetalleMenu extends Fragment {
 
                         lista.setAdapter(adapter);
 
-                    } else {
+                    }
+                    else {
+                        //Si el objteo es null
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(rootView.getContext(), "Este Menu no posee Detalle", Toast.LENGTH_SHORT).show();
+
                         FragmentManager fm = getActivity().getSupportFragmentManager();
-                        for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
+                        for (int i = 0; i < fm.getBackStackEntryCount()-1; ++i) {
                             fm.popBackStack();
                         }
 
                         Fragment fragment = new Menus();
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("IdCategoria", menu.getIdcategoria());
+                        fragment.setArguments(bundle);
+
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
+                        transaction.addToBackStack(null);
                         transaction.commit();
                     }
 
