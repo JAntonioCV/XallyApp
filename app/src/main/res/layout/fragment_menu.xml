@@ -12,9 +12,18 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewMenu"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewMenu"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+
 
 </RelativeLayout>

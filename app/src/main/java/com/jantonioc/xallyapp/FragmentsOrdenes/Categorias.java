@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -41,6 +42,8 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
     private RecyclerView lista;
     private List<Categoria> listacategorias;
     private  ProgressBar progressBar;
+    private CategoriaAdapter adapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     public Categorias() {
         // Required empty public constructor
@@ -65,6 +68,20 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
         lista = rootView.findViewById(R.id.recyclerViewCategoria);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
+
+        //swipe to refresh
+        swipeRefreshLayout = rootView.findViewById(R.id.swipe);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Toast.makeText(rootView.getContext(), "Actualizando las categorias", Toast.LENGTH_SHORT).show();
+                listaCategoria();
+                adapter.notifyDataSetChanged();
+                Toast.makeText(rootView.getContext(), "Categoria Actualizada", Toast.LENGTH_SHORT).show();
+                swipeRefreshLayout.setRefreshing(false);
+
+            }
+        });
 
         progressBar = rootView.findViewById(R.id.progressBar);
 
@@ -129,7 +146,7 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
                     //if la lista es mayor que 0 adapta la lista de los contario muestra un mensaje
                     if (listacategorias.size() > 0) {
                         progressBar.setVisibility(View.GONE);
-                        CategoriaAdapter adapter = new CategoriaAdapter(listacategorias, Categorias.this);
+                        adapter = new CategoriaAdapter(listacategorias, Categorias.this);
                         lista.setAdapter(adapter);
                     } else {
 

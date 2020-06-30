@@ -22,6 +22,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -59,6 +60,8 @@ public class Menus extends Fragment {
     private TextInputLayout txtcantidad;
     private TextInputLayout txtnota;
     private TextView txtplatillo;
+
+    private SwipeRefreshLayout swipeRefreshLayout;
 
 
     public Menus() {
@@ -120,6 +123,20 @@ public class Menus extends Fragment {
 
         //Obteniendo la id de la categoria selecionada
         idcategoria = getArguments().getInt("IdCategoria", 0);
+
+        //swipe to refresh
+        swipeRefreshLayout = rootView.findViewById(R.id.swipe);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Toast.makeText(rootView.getContext(), "Actualizando el Menu", Toast.LENGTH_SHORT).show();
+                listaMenu(idcategoria);
+                adapter.notifyDataSetChanged();
+                Toast.makeText(rootView.getContext(), "Menu Actualizado", Toast.LENGTH_SHORT).show();
+                swipeRefreshLayout.setRefreshing(false);
+
+            }
+        });
 
         //Listando el menu por id de la cstegoria
         listaMenu(idcategoria);
