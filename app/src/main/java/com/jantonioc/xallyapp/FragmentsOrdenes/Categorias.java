@@ -71,6 +71,7 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
 
         //swipe to refresh
         swipeRefreshLayout = rootView.findViewById(R.id.swipe);
+        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
