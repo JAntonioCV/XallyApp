@@ -100,7 +100,7 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
         //Instancia de la lista
         listacategorias = new ArrayList<>();
 
-        String uri = "http://xally.somee.com/Xally/API/CategoriasWS/Categorias";
+        String uri = "http://192.168.1.52/MenuAPI/API/CategoriasWS/Categorias";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

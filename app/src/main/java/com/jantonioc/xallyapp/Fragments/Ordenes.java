@@ -94,7 +94,7 @@ public class Ordenes extends Fragment {
     }
 
     private void obtenerCodigo() {
-        String uri = "http://xally.somee.com/Xally/API/OrdenesWS/UltimoCodigo";
+        String uri = "http://192.168.1.52/MenuAPI/API/OrdenesWS/UltimoCodigo";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -119,7 +119,7 @@ public class Ordenes extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(), "Eror"+error.getMessage()+error, Toast.LENGTH_LONG).show();
 
             }
         });

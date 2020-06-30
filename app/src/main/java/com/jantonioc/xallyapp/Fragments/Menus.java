@@ -131,7 +131,7 @@ public class Menus extends Fragment {
     private void listaMenu(final int idcategoria) {
         listamenu = new ArrayList<>();
 
-        String uri = "http://xally.somee.com/Xally/API/MenusWS/MenusCategoria/" + idcategoria;
+        String uri = "http://192.168.1.52/MenuAPI/API/MenusWS/MenusCategoria/" + idcategoria;
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

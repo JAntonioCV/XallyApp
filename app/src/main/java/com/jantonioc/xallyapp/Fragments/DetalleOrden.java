@@ -19,10 +19,12 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.DetalleDeOrden;
@@ -36,7 +38,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,6 +54,8 @@ public class DetalleOrden extends Fragment {
     private TextInputLayout txtcantidad;
     private TextInputLayout txtnota;
     private TextView txtplatillo;
+
+
 
     //FloatingActionButton fabenviar;
     private Button btnenviar;
@@ -143,7 +149,7 @@ public class DetalleOrden extends Fragment {
             }
         };
 
-        //heleper para el reciclerview
+        //helper para el reciclerview
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(lista);
 
@@ -275,7 +281,8 @@ public class DetalleOrden extends Fragment {
         }
 
         //Enviar la orden al server
-        String uri = "http://xally.somee.com/Xally/API/DetallesDeOrdenWS/OrdenesDetalle";
+
+        String uri = "http://192.168.1.52/MenuAPI/API/DetallesDeOrdenWS/OrdenesDetalle";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, uri, ordenesObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -307,7 +314,7 @@ public class DetalleOrden extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
 
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(),error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
