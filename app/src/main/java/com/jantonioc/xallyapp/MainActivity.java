@@ -18,10 +18,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Orden;
-import com.jantonioc.xallyapp.Fragments.AddCategoria;
-import com.jantonioc.xallyapp.Fragments.DetalleOrden;
-import com.jantonioc.xallyapp.Fragments.Ordenes;
-import com.jantonioc.xallyapp.Fragments.SelectCategoria;
+import com.jantonioc.xallyapp.FragmentsOrdenes.AddCategoria;
+import com.jantonioc.xallyapp.FragmentsOrdenes.DetalleOrden;
+import com.jantonioc.xallyapp.FragmentsOrdenes.Ordenes;
+import com.jantonioc.xallyapp.FragmentsOrdenes.SelectCategoria;
 
 import java.util.ArrayList;
 import java.util.List;

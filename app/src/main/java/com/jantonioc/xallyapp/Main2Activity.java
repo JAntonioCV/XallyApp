@@ -14,9 +14,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.jantonioc.xallyapp.Fragments.AddCategoria;
-import com.jantonioc.xallyapp.Fragments.Categorias;
-import com.jantonioc.xallyapp.Fragments.SelectCategoria;
+import com.jantonioc.xallyapp.FragmentsOrdenes.AddCategoria;
+import com.jantonioc.xallyapp.FragmentsOrdenes.Categorias;
+import com.jantonioc.xallyapp.FragmentsOrdenes.SelectCategoria;
 
 import static com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemSelectedListener;
 

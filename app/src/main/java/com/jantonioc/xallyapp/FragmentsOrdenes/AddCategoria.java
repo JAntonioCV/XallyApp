@@ -1,4 +1,4 @@
-package com.jantonioc.xallyapp.Fragments;
+package com.jantonioc.xallyapp.FragmentsOrdenes;
 
 
 import android.os.Bundle;
@@ -12,14 +12,12 @@ import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.Categoria;
-import com.jantonioc.ln.Menu;
 import com.jantonioc.xallyapp.R;
 import com.jantonioc.xallyapp.VolleySingleton;
 
@@ -29,24 +27,22 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddProducto extends Fragment {
+public class AddCategoria extends Fragment {
 
     private TextInputLayout txtcodigo;
     private TextInputLayout txtdescricion;
-    private TextInputLayout txtprecio;
     private RadioButton activo;
     private RadioButton inactivo;
     private View rootview;
     private Button btnguardar;
     private Button btncancelar;
-    int idcategoria;
 
+    boolean guardado = false;
 
-    public AddProducto() {
+    public AddCategoria() {
         // Required empty public constructor
     }
 
@@ -54,18 +50,14 @@ public class AddProducto extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         Toolbar toolbar=getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Agregar Producto");
+        toolbar.setTitle("Agregar Categoria");
 
         // Inflate the layout for this fragment
-        rootview = inflater.inflate(R.layout.fragment_add_producto, container, false);
-
-        idcategoria= getArguments().getInt("IdCategoria", 0);
+        rootview = inflater.inflate(R.layout.fragment_add_categoria, container, false);
 
         txtcodigo = rootview.findViewById(R.id.codigo);
         txtdescricion = rootview.findViewById(R.id.descripcion);
-        txtprecio = rootview.findViewById(R.id.precio);
         activo = rootview.findViewById(R.id.activo);
         inactivo = rootview.findViewById(R.id.inactivo);
         btnguardar = rootview.findViewById(R.id.btnguardar);
@@ -82,15 +74,14 @@ public class AddProducto extends Fragment {
                 }
                 else
                 {
-                    Menu menu = new Menu();
-                    menu.setCodigo(txtcodigo.getEditText().getText().toString());
-                    menu.setDescripcion(txtdescricion.getEditText().getText().toString());
-                    menu.setPrecio(Double.valueOf(txtprecio.getEditText().getText().toString()));
-                    menu.setEstado(getEstado());
 
-                    agregarMenu(menu);
+                    Categoria categoria = new Categoria();
+                    categoria.setCodigo(txtcodigo.getEditText().getText().toString());
+                    categoria.setDescripcion(txtdescricion.getEditText().getText().toString());
+                    categoria.setEstado(getEstado());
+
+                    agregarCategoria(categoria);
                 }
-
             }
         });
 
@@ -103,22 +94,22 @@ public class AddProducto extends Fragment {
 
 
         return rootview;
+
     }
 
-    private void agregarMenu(Menu menu)
+    private void agregarCategoria(Categoria categoria)
     {
 
+
         Map<String,String> parametros= new HashMap<>();
-        parametros.put("codigo",menu.getCodigo());
-        parametros.put("descripcion",menu.getDescripcion());
-        parametros.put("precio",String.valueOf(menu.getPrecio()));
-        parametros.put("estado",String.valueOf(menu.isEstado()));
-        parametros.put("idcategoria",String.valueOf(idcategoria));
+        parametros.put("codigo",categoria.getCodigo());
+        parametros.put("descripcion",categoria.getDescripcion());
+        parametros.put("estado",String.valueOf(categoria.isEstado()));
 
         JSONObject parametroJson= new JSONObject(parametros);
 
 
-        String uri="http://xally.somee.com/Xally/API/MenusWS/AddProducto";
+        String uri="http://xally.somee.com/Xally/API/CategoriasWS/AddCategoria";
         JsonObjectRequest request= new JsonObjectRequest(Request.Method.POST, uri,parametroJson, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response)
@@ -158,8 +149,10 @@ public class AddProducto extends Fragment {
         VolleySingleton.getInstance(rootview.getContext()).addToRequestQueue(request);
     }
 
+
     private boolean getEstado()
     {
+
         if(activo.isChecked())
         {
             return true;
@@ -170,14 +163,12 @@ public class AddProducto extends Fragment {
         }
     }
 
-
     private boolean validarCampos()
     {
         boolean isValidate=true;
 
         String codigoInput = txtcodigo.getEditText().getText().toString().trim();
         String descripcionInput = txtdescricion.getEditText().getText().toString().trim();
-        String precioInput = txtprecio.getEditText().getText().toString().trim();
 
         if(codigoInput.isEmpty())
         {
@@ -204,16 +195,6 @@ public class AddProducto extends Fragment {
             txtdescricion.setError(null);
         }
 
-        if(precioInput.isEmpty())
-        {
-            isValidate=false;
-            txtprecio.setError("Precio no puede estar vacio");
-
-        }else
-        {
-            txtprecio.setError(null);
-        }
-
         return isValidate;
     }
 
@@ -222,9 +203,10 @@ public class AddProducto extends Fragment {
     {
         txtcodigo.getEditText().setText("");
         txtdescricion.getEditText().setText("");
-        txtprecio.getEditText().setText("");
         txtcodigo.requestFocus();
         activo.setChecked(true);
     }
+
+
 
 }

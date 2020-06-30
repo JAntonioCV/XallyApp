@@ -1,4 +1,4 @@
-package com.jantonioc.xallyapp.Fragments;
+package com.jantonioc.xallyapp.FragmentsOrdenes;
 
 
 import android.graphics.Color;
