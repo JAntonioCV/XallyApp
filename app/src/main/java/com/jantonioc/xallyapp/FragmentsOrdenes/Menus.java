@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -24,11 +25,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Menu;
@@ -42,7 +46,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -56,10 +62,18 @@ public class Menus extends Fragment {
     private MenuAdapter adapter;
     private ProgressBar progressBar;
     private int idcategoria;
+    private int cantidad;
 
     private TextInputLayout txtcantidad;
     private TextInputLayout txtnota;
+
+    private TextInputEditText cantidadtxt;
+    private TextInputEditText notatxt;
+
+    private Button ordenar;
+
     private TextView txtplatillo;
+    private TextView txtexistencia;
 
     private SwipeRefreshLayout swipeRefreshLayout;
 
@@ -101,6 +115,12 @@ public class Menus extends Fragment {
         editText.setTextColor(Color.WHITE);
 
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -188,7 +208,7 @@ public class Menus extends Fragment {
                             @Override
                             public void onClick(View v) {
 
-                                detalleOrden(listamenu.get(lista.getChildAdapterPosition(v)));
+                                Obtenerexitencia(listamenu.get(lista.getChildAdapterPosition(v)));
                             }
                         });
 
@@ -245,31 +265,58 @@ public class Menus extends Fragment {
 
     //Detalle de orden pasamos el objeto
 
-    private void detalleOrden(final Menu obj) {
+    private void detalleOrden(final Menu obj, final int cantidad) {
 
         //Consultamos si es una nueva o una existente
         if (!esNuevaOrden(obj)) {
             //Abrimos la modal para modificar la orden para evitar que se agregen 2 productos del mismo en la lista
-            modificarOrden(obj);
+            modificarOrden(obj, cantidad);
         } else {
             //Abrimos la modal agregar el nuevo detalle de orden
             final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
             View view = getLayoutInflater().inflate(R.layout.detalle_orden, null);
-            txtplatillo = view.findViewById(R.id.nombreplatillo);
-            txtplatillo.setText(obj.getDescripcion());
-            txtcantidad = view.findViewById(R.id.cantidad);
-            txtcantidad.getEditText().setText("1");
-            txtnota = view.findViewById(R.id.notaopcional);
 
-            Button ordenar = view.findViewById(R.id.btnordenar);
+            txtplatillo = view.findViewById(R.id.nombreplatillo);
+            txtexistencia = view.findViewById(R.id.existencia);
+            txtcantidad = view.findViewById(R.id.cantidad);
+            txtnota = view.findViewById(R.id.notaopcional);
+            cantidadtxt = view.findViewById(R.id.cantidadtxt);
+            notatxt = view.findViewById(R.id.notatxt);
+            ordenar = view.findViewById(R.id.btnordenar);
+
+            txtplatillo.setText(obj.getDescripcion());
+            txtcantidad.getEditText().setText("1");
+
+            if(cantidad == 0)
+            {
+                txtexistencia.setText("Existencia: 0");
+
+                cantidadtxt.setEnabled(false);
+                notatxt.setEnabled(false);
+                ordenar.setEnabled(false);
+                txtcantidad.getEditText().setText("");
+            }
+            else if (cantidad == -1) {
+                txtexistencia.setText("Existencia: Sin producto asociado");
+
+                cantidadtxt.setEnabled(false);
+                notatxt.setEnabled(false);
+                ordenar.setEnabled(false);
+                txtcantidad.getEditText().setText("");
+
+            } else if (cantidad == -2) {
+                txtexistencia.setText("Existencia: No inventariado");
+            } else {
+                txtexistencia.setText("Existencia: " + String.valueOf(cantidad));
+            }
 
             ordenar.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
                     //Validamos que los campos no esten vacios o incumplan
-                    if (!validarCampos()) {
+                    if (!validarCampos(cantidad)) {
                         return;
                     } else {
                         //Agregar Ordenes
@@ -296,6 +343,27 @@ public class Menus extends Fragment {
         }
     }
 
+    //Obtener la existencia de un producto de el bar
+    private void Obtenerexitencia(final Menu menu) {
+        String uri = "http://192.168.1.52/MenuAPI/API/OrdenesWS/Existencia/" + menu.getId();
+        StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                cantidad = Integer.valueOf(response);
+                detalleOrden(menu, cantidad);
+            }
+
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+        VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
+    }
+
 
     //detalle del platillo
     private void detalleMenu(final Menu menu) {
@@ -314,7 +382,7 @@ public class Menus extends Fragment {
 
 
     //Validando que no esten los campos vacios
-    private boolean validarCampos() {
+    private boolean validarCampos(int cantidad) {
         boolean isValidate = true;
 
         String cantidadInput = txtcantidad.getEditText().getText().toString().trim();
@@ -327,10 +395,12 @@ public class Menus extends Fragment {
             isValidate = false;
             txtcantidad.setError("La cantidad no puede ser menor a 1");
 
+        } else if (Integer.valueOf(cantidadInput) > cantidad && cantidad != -2) {
+            isValidate = false;
+            txtcantidad.setError("La cantidad no puede ser mayor a la existencia");
         } else {
             txtcantidad.setError(null);
         }
-
 
         return isValidate;
     }
@@ -349,7 +419,7 @@ public class Menus extends Fragment {
 
 
     //Validando si se modifica la orden o se agrega una nueva || aqui deberia mostrar lo que ya tengo que podria ser modificado
-    private void modificarOrden(final Menu obj) {
+    private void modificarOrden(final Menu obj, final int cantidad) {
         //recorrer la lista en busca de un objeto que coincida con la busqueda dentro de la lista y el seleeccionado
         for (final DetalleDeOrden detalleActual : MainActivity.listadetalle) {
 
@@ -364,7 +434,13 @@ public class Menus extends Fragment {
                 txtplatillo.setText(obj.getDescripcion());
                 txtcantidad.getEditText().setText(String.valueOf(detalleActual.getCantidad()));
                 txtnota.getEditText().setText(detalleActual.getNota());
+                txtexistencia = view.findViewById(R.id.existencia);
 
+                if (cantidad == -2) {
+                    txtexistencia.setText("Existencia: No inventariado");
+                } else {
+                    txtexistencia.setText("Existencia: " + String.valueOf(cantidad));
+                }
 
                 Button ordenar = view.findViewById(R.id.btnordenar);
                 ordenar.setText("MODIFICAR");
@@ -373,10 +449,15 @@ public class Menus extends Fragment {
                     @Override
                     public void onClick(View v) {
 
-                        //modifiamos el detalle para que se guarden los nuevos datos
-                        detalleActual.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
-                        detalleActual.setNota(txtnota.getEditText().getText().toString());
-                        builder.cancel();
+                        //Validamos que los campos no esten vacios o incumplan
+                        if (!validarCampos(cantidad)) {
+                            return;
+                        } else {
+                            //modifiamos el detalle para que se guarden los nuevos datos
+                            detalleActual.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
+                            detalleActual.setNota(txtnota.getEditText().getText().toString());
+                            builder.cancel();
+                        }
                     }
                 });
 

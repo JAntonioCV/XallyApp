@@ -20,8 +20,8 @@ import java.util.List;
 
 public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.holder> implements Filterable, View.OnClickListener, View.OnLongClickListener {
 
-    private final List<Menu> lista;
-    List<Menu> listafull;
+    private List<Menu> lista;
+    private List<Menu> listafull;
 
     private View.OnClickListener ClickListener;
     private View.OnLongClickListener LongClickListener;

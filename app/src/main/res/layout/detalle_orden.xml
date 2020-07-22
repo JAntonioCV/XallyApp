@@ -25,6 +25,15 @@
         android:layout_marginBottom="4dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
+    <TextView
+        android:id="@+id/existencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Existencia"
+        android:layout_marginBottom="4dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/cantidad"
         android:layout_width="match_parent"
@@ -32,6 +41,7 @@
         app:errorEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/cantidadtxt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Cantidad"
@@ -45,6 +55,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/notatxt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
