@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.xallyapp.R;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapter.holder> implements View.OnClickListener {
@@ -85,8 +86,18 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
 
             precio.setText("Precio: $"+Double.valueOf(detalleOrden.getPrecio()).toString());
 
-            pretotal.setText("Pretotal: $"+Double.valueOf(detalleOrden.getPrecio()*detalleOrden.getCantidad()).toString());
+            pretotal.setText("Pretotal: $"+ preTotal(detalleOrden.getPrecio(),detalleOrden.getCantidad()));
+        }
 
+        private String preTotal(double precio,int cantidad)
+        {
+            double valor;
+            DecimalFormat format = new DecimalFormat();
+            format.setMaximumFractionDigits(2);
+
+            valor=precio*cantidad;
+
+            return format.format(valor);
         }
 
     }

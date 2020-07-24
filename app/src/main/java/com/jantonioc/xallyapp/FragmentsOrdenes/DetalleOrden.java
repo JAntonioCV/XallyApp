@@ -23,9 +23,12 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.DetalleDeOrden;
+import com.jantonioc.ln.Menu;
 import com.jantonioc.ln.Orden;
 import com.jantonioc.xallyapp.Adaptadores.DetalleOrdenAdapter;
 import com.jantonioc.xallyapp.MainActivity;
@@ -36,6 +39,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 /**
@@ -50,7 +54,14 @@ public class DetalleOrden extends Fragment {
     private TextInputLayout txtcantidad;
     private TextInputLayout txtnota;
     private TextView txtplatillo;
+    private TextView txtexistencia;
 
+    private TextInputEditText cantidadtxt;
+    private TextInputEditText notatxt;
+
+    private Button ordenar;
+
+    int cantidad;
 
 
     //FloatingActionButton fabenviar;
@@ -83,7 +94,7 @@ public class DetalleOrden extends Fragment {
         total = rootView.findViewById(R.id.total);
 
         //Calcular el total
-        total.setText("$" + Double.valueOf(calcularTotal(MainActivity.listadetalle)).toString());
+        total.setText("$" + calcularTotal(MainActivity.listadetalle));
 
         //Validar si la lista tiene datos envia si no, muestra un mensaje
         btnenviar = rootView.findViewById(R.id.btnenviar);
@@ -127,7 +138,8 @@ public class DetalleOrden extends Fragment {
                         Toast.makeText(rootView.getContext(), "Eliminado de la Orden", Toast.LENGTH_SHORT).show();
                         int position = viewHolder.getAdapterPosition();
                         MainActivity.listadetalle.remove(position);
-                        total.setText("$" + Double.valueOf(calcularTotal(MainActivity.listadetalle)).toString());
+
+                        total.setText("$"+ calcularTotal(MainActivity.listadetalle));
                         adapter.notifyDataSetChanged();
                     }
                 });
@@ -165,7 +177,9 @@ public class DetalleOrden extends Fragment {
             @Override
             public void onClick(View v) {
                 //metodo para modificar
-                modificardetalle(MainActivity.listadetalle.get(lista.getChildAdapterPosition(v)));
+                //modificardetalle(MainActivity.listadetalle.get(lista.getChildAdapterPosition(v)));
+                Obtenerexitencia(MainActivity.listadetalle.get(lista.getChildAdapterPosition(v)), lista.getChildAdapterPosition(v));
+
             }
         });
 
@@ -174,53 +188,136 @@ public class DetalleOrden extends Fragment {
     }
 
     //Validando si se modifica la orden o se agrega una nueva || aqui deberia mostrar lo que ya tengo que podria ser modificado
-    private void modificardetalle(final DetalleDeOrden detalleDeOrden) {
+    private void modificardetalle(final DetalleDeOrden detalleDeOrden, final int cantidad, final int position) {
 
         for (final DetalleDeOrden detalleActual : MainActivity.listadetalle) {
 
             if (detalleDeOrden.getMenuid() == detalleActual.getMenuid()) {
 
-                final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
+                //si la cantidad es 0 y la cantidad de orden mayor quiere decir que no hay existencia
+                if (cantidad == 0) {
+                    //Mostrar un dialog
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-                View view = getLayoutInflater().inflate(R.layout.detalle_orden, null);
-                txtplatillo = view.findViewById(R.id.nombreplatillo);
-                txtplatillo.setText(detalleActual.getNombreplatillo());
-                txtcantidad = view.findViewById(R.id.cantidad);
-                txtnota = view.findViewById(R.id.notaopcional);
+                    builder.setTitle("Eliminar Detalle");
+                    builder.setMessage("¿La existencia ha cambiado a 0 desea eliminar el detalle?");
 
-                txtcantidad.getEditText().setText(String.valueOf(detalleActual.getCantidad()));
-                txtnota.getEditText().setText(detalleActual.getNota());
+                    builder.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //Si confirma se borra de la lista del detalle y se calcula el total
+                            Toast.makeText(rootView.getContext(), "Eliminado de la Orden", Toast.LENGTH_SHORT).show();
+                            MainActivity.listadetalle.remove(position);
+                            total.setText("$" + calcularTotal(MainActivity.listadetalle));
+                            adapter.notifyDataSetChanged();
+                        }
+                    });
 
-                Button ordenar = view.findViewById(R.id.btnordenar);
-                ordenar.setText("MODIFICAR");
+                    builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //si lo cancela se cierra y vuelve el detalle eliminado por el swipe
+                            adapter.notifyItemChanged(position);
+                        }
+                    });
 
-                ordenar.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+                    builder.create();
+                    builder.show();
 
-                        detalleActual.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
-                        detalleActual.setNota(txtnota.getEditText().getText().toString());
-                        listaDetalleDeOrden();
-                        total.setText("$" + Double.valueOf(calcularTotal(MainActivity.listadetalle)).toString());
-                        builder.cancel();
+                } else if(cantidad < detalleActual.getCantidad() && cantidad != -2)
+                {
+                    //Mostrar un dialog
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+                    builder.setTitle("Actualizar Detalle");
+                    builder.setMessage("La existencia ah cambiado,¿Desea actualizar la cantidad del detalle?");
+
+                    builder.setPositiveButton("Actualizar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //Si confirma
+                            detalleActual.setCantidad(cantidad);
+                            listaDetalleDeOrden();
+                            total.setText("$" + calcularTotal(MainActivity.listadetalle));
+                            Toast.makeText(rootView.getContext(), "La cantidad fue cambiada para: " + detalleActual.getNombreplatillo(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                    builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    builder.create();
+                    builder.show();
+                }
+
+                else {
+
+                    final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
+
+                    View view = getLayoutInflater().inflate(R.layout.detalle_orden, null);
+                    txtplatillo = view.findViewById(R.id.nombreplatillo);
+                    txtexistencia = view.findViewById(R.id.existencia);
+                    txtcantidad = view.findViewById(R.id.cantidad);
+                    txtnota = view.findViewById(R.id.notaopcional);
+
+                    txtplatillo.setText(detalleActual.getNombreplatillo());
+
+                    if (cantidad == -2) {
+                        txtexistencia.setText("Existencia: No inventariado");
+                    } else {
+                        txtexistencia.setText("Existencia: " + String.valueOf(cantidad));
                     }
-                });
 
-                builder.setView(view);
-                builder.create();
-                builder.show();
+                    txtcantidad.getEditText().setText(String.valueOf(detalleActual.getCantidad()));
+                    txtnota.getEditText().setText(detalleActual.getNota());
+
+                    Button ordenar = view.findViewById(R.id.btnordenar);
+                    ordenar.setText("MODIFICAR");
+
+                    ordenar.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            if (!validarCampos(cantidad)) {
+                                return;
+                            } else {
+                                detalleActual.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
+                                detalleActual.setNota(txtnota.getEditText().getText().toString());
+                                listaDetalleDeOrden();
+                                total.setText("$" + calcularTotal(MainActivity.listadetalle));
+                                builder.cancel();
+                            }
+
+
+                        }
+                    });
+
+                    builder.setView(view);
+                    builder.create();
+                    builder.show();
+                }
+
+
             }
         }
     }
 
     //Calclulamos el total del detalle para la orden
-    private double calcularTotal(List<DetalleDeOrden> detalleDeOrdens) {
+    private String calcularTotal(List<DetalleDeOrden> detalleDeOrdens) {
+
+        DecimalFormat format = new DecimalFormat();
+        format.setMaximumFractionDigits(2);
+
         double total = 0;
 
         for (DetalleDeOrden detalleActual : detalleDeOrdens) {
             total = total + detalleActual.getCantidad() * detalleActual.getPrecio();
         }
-        return total;
+        return format.format(total);
     }
 
     //enviamos la orden al servidor
@@ -310,10 +407,55 @@ public class DetalleOrden extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
 
-                Toast.makeText(rootView.getContext(),error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
+        VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
+    }
+
+    //Validando que no esten los campos vacios
+    private boolean validarCampos(int cantidad) {
+        boolean isValidate = true;
+
+        String cantidadInput = txtcantidad.getEditText().getText().toString().trim();
+
+        if (cantidadInput.isEmpty()) {
+            isValidate = false;
+            txtcantidad.setError("Cantidad no puede estar vacio");
+
+        } else if (Integer.valueOf(cantidadInput) <= 0) {
+            isValidate = false;
+            txtcantidad.setError("La cantidad no puede ser menor a 1");
+
+        } else if (Integer.valueOf(cantidadInput) > cantidad && cantidad != -2) {
+            isValidate = false;
+            txtcantidad.setError("La cantidad no puede ser mayor a la existencia");
+        } else {
+            txtcantidad.setError(null);
+        }
+
+        return isValidate;
+    }
+
+    //Obtener la existencia de un producto de el bar
+    private void Obtenerexitencia(final DetalleDeOrden detalleDeOrden, final int position) {
+        String uri = "http://192.168.1.52/MenuAPI/API/OrdenesWS/Existencia/" + detalleDeOrden.getMenuid();
+        StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                cantidad = Integer.valueOf(response);
+                modificardetalle(detalleDeOrden, cantidad, position);
+            }
+
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
     }
 
