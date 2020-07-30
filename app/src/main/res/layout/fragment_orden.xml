@@ -8,6 +8,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/codigoorden"
         android:layout_width="match_parent"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -22,6 +23,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/fechaorden"
         android:layout_width="match_parent"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -36,6 +38,8 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/horaorden"
         android:layout_width="match_parent"
+        android:paddingBottom="4dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -47,21 +51,12 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal">
-
         <Button
             android:id="@+id/btnagregarpedido"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:background="@color/colorPrimary"
+            android:background="@drawable/bordes_redondos"
             android:text="Agregar Orden" />
-
-    </LinearLayout>
-
 
 </LinearLayout>

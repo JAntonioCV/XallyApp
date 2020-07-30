@@ -26,7 +26,6 @@
         <item name="android:textColorSecondary">@android:color/white</item>
 
     </style>
-    |
 
     <style name="cursorColor" parent="Widget.AppCompat.AutoCompleteTextView">
         <item name="android:textCursorDrawable">@drawable/cursor</item>
@@ -36,7 +35,7 @@
         <item name="colorButtonNormal">@color/colorPrimary</item>
     </style>
 
-    <style name="SplashTheme" parent="AppTheme">
+    <style name="SplashTheme" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@drawable/splashscreen</item>
     </style>
 

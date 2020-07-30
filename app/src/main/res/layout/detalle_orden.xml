@@ -38,6 +38,7 @@
         android:id="@+id/cantidad"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         app:errorEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -52,6 +53,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/notaopcional"
         android:layout_width="match_parent"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -66,10 +68,11 @@
 
         <Button
             android:id="@+id/btnordenar"
+            android:layout_marginTop="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:background="@color/colorPrimary"
+            android:background="@drawable/bordes_redondos"
             android:text="Ordenar" />
 
 </LinearLayout>
