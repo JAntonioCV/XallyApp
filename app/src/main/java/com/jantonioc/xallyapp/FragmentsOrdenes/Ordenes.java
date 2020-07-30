@@ -3,18 +3,29 @@ package com.jantonioc.xallyapp.FragmentsOrdenes;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -51,6 +62,29 @@ public class Ordenes extends Fragment {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.reload_fragment, menu);
+
+        //Menu item para buscar
+        MenuItem reload = menu.findItem(R.id.action_reload);
+
+        reload.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                obtenerCodigo();
+                return false;
+            }
+        });
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -75,6 +109,12 @@ public class Ordenes extends Fragment {
         obtenerCodigo();
 
         btnAgregarOrden = rootView.findViewById(R.id.btnagregarpedido);
+
+        btnAgregarOrden.setEnabled(false);
+
+        //------------------------------------------------
+        //no puedo agregar la orden si no tengo el codigo
+        //------------------------------------------------
 
         btnAgregarOrden.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,7 +150,9 @@ public class Ordenes extends Fragment {
                     MainActivity.orden.setCodigo(txtcodigo.getEditText().getText().toString());
                     MainActivity.orden.setFechaorden(txtfecha.getEditText().getText().toString());
                     MainActivity.orden.setTiempoorden(txthora.getEditText().getText().toString());
-                    MainActivity.orden.setEstado(true);
+                    MainActivity.orden.setEstado(false);
+
+                    btnAgregarOrden.setEnabled(true);
 
                 } else {
                     Toast.makeText(rootView.getContext(), "Error al obtener el codigo, intente de nuevo", Toast.LENGTH_SHORT).show();
@@ -120,8 +162,18 @@ public class Ordenes extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(rootView.getContext(), "Eror"+error.getMessage()+error, Toast.LENGTH_LONG).show();
 
+                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                    Toast.makeText(rootView.getContext(), "Communication Error!", Toast.LENGTH_SHORT).show();
+                } else if (error instanceof AuthFailureError) {
+                    Toast.makeText(rootView.getContext(), "Authentication Error!", Toast.LENGTH_SHORT).show();
+                } else if (error instanceof ServerError) {
+                    Toast.makeText(rootView.getContext(), "Server Side Error!", Toast.LENGTH_SHORT).show();
+                } else if (error instanceof NetworkError) {
+                    Toast.makeText(rootView.getContext(), "Network Error!", Toast.LENGTH_SHORT).show();
+                } else if (error instanceof ParseError) {
+                    Toast.makeText(rootView.getContext(), "Parse Error!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 

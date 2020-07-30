@@ -31,6 +31,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -41,6 +44,7 @@ public class DetalleMenu extends Fragment {
     private TextView nombre, precio, tiempo;
     private ProgressBar progressBar;
     private CardView cardinfo,cardingre;
+    private List<String> ingredientes = new ArrayList();
 
 
     public DetalleMenu() {
@@ -93,7 +97,7 @@ public class DetalleMenu extends Fragment {
     //obtener informacion de los platillos
     private void detalleMenu(final Menu menu) {
 
-        String uri = "http://192.168.1.52/MenuAPI/API/RecetasWS/RecetaPorPlatillo/" + menu.getId();
+        String uri = "http://192.168.1.52/MenuAPI/API/IngredientesWS/IngredientesMenu/" + menu.getId();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -104,17 +108,13 @@ public class DetalleMenu extends Fragment {
 
                     if(jsonArray.length() != 0)
                     {
-                        //Obteniendo la informacion del objeto
-                        JSONObject obj = jsonArray.getJSONObject(0);
+                        for(int i=0; i<jsonArray.length();i++)
+                        {
+                            JSONObject obj = jsonArray.getJSONObject(i);
 
-                        //Agregando el objeto a la clase
-                        Receta receta = new Receta(
-                                obj.getInt("id"),
-                                obj.getString("descripcion"),
-                                obj.getString("tiempoEstimado"),
-                                obj.getBoolean("estado"),
-                                obj.getString("ingrediente")
-                        );
+                            String ingrediente = obj.getString("descripcion");
+                            ingredientes.add(ingrediente);
+                        }
 
                         //Hacemos visibles las cards
                         cardinfo.setVisibility(View.VISIBLE);
@@ -125,12 +125,9 @@ public class DetalleMenu extends Fragment {
                         //Mandamos la informacion
                         nombre.setText(menu.getDescripcion());
                         precio.setText("Precio: " + Double.valueOf(menu.getPrecio()).toString() + " $");
-                        tiempo.setText("Tiempo estimado: " + receta.getTiempoEstimado() + " minutos");
+                        tiempo.setText("Tiempo estimado: " + menu.getTiempoestimado() + " minutos");
 
-                        //Creamos un arreglo de los ingredientes y los adaptamos a una lista
-                        String[] ingredientes = receta.getIngrediente().split(";");
-
-                        ArrayAdapter adapter = new ArrayAdapter<String>(rootView.getContext(), android.R.layout.simple_list_item_1, ingredientes);
+                        ArrayAdapter adapter = new ArrayAdapter<>(rootView.getContext(), android.R.layout.simple_list_item_1, ingredientes);
 
                         //Hacerlo con un RecyclerView
                         //List<String> ingredientes;

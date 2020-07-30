@@ -104,6 +104,7 @@ public class DetalleOrden extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Toast.makeText(rootView.getContext(), "Enviando", Toast.LENGTH_SHORT).show();
+
                     enviarOrden(MainActivity.listadetalle, MainActivity.orden);
                 }
             });
@@ -179,7 +180,6 @@ public class DetalleOrden extends Fragment {
                 //metodo para modificar
                 //modificardetalle(MainActivity.listadetalle.get(lista.getChildAdapterPosition(v)));
                 Obtenerexitencia(MainActivity.listadetalle.get(lista.getChildAdapterPosition(v)), lista.getChildAdapterPosition(v));
-
             }
         });
 
@@ -323,37 +323,39 @@ public class DetalleOrden extends Fragment {
     //enviamos la orden al servidor
     private void enviarOrden(List<DetalleDeOrden> detalleDeOrdenes, Orden orden) {
 
-
         //Creamos el objeto de la orden :v
-        JSONObject jsonObject = new JSONObject();
+        JSONObject ordenObject = new JSONObject();
         try {
-            jsonObject.put("codigo", orden.getCodigo());
-            jsonObject.put("fechaorden", orden.getFechaorden());
-            jsonObject.put("tiempoorden", orden.getTiempoorden());
-            jsonObject.put("estado", Boolean.valueOf(orden.isEstado()).toString());
+            ordenObject.put("codigo", orden.getCodigo());
+            ordenObject.put("fechaorden", orden.getFechaorden());
+            ordenObject.put("tiempoorden", orden.getTiempoorden());
+            ordenObject.put("estado", orden.isEstado());
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         //Creamos el Array de los detalles de ordenes
-        JSONArray jsonArray = new JSONArray();
+        JSONArray detallesordenesArray = new JSONArray();
 
         //Recorremos las lista de detalles y la agregamos al array
         for (DetalleDeOrden detalleActual : detalleDeOrdenes) {
             try {
 
                 //objeto donde se guardara una orden
-                JSONObject ordenes = new JSONObject();
+                JSONObject detallesordenes = new JSONObject();
 
                 //Guardando datos del detalle de orden
-                ordenes.put("cantidadorden", String.valueOf(detalleActual.getCantidad()));
-                ordenes.put("notaorden", detalleActual.getNota().isEmpty() ? "Sin nota" : detalleActual.getNota());
-                ordenes.put("estado", "true");
-                ordenes.put("menuid", String.valueOf(detalleActual.getMenuid()));
+                detallesordenes.put("cantidadorden", detalleActual.getCantidad());
+                detallesordenes.put("notaorden", detalleActual.getNota().isEmpty() ? "Sin nota" : detalleActual.getNota());
+                detallesordenes.put("nombreplatillo", detalleActual.getNombreplatillo());
+                detallesordenes.put("preciounitario", detalleActual.getPrecio());
+                detallesordenes.put("estado", detalleActual.getEstado());
+                detallesordenes.put("menuid", detalleActual.getMenuid());
+
 
                 //ingresamos el objeto al array
-                jsonArray.put(ordenes);
+                detallesordenesArray.put(detallesordenes);
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -366,8 +368,8 @@ public class DetalleOrden extends Fragment {
         try {
 
             //les asginamos un nombre para que los pueda reconocer la api
-            ordenesObject.put("ordenWS", jsonObject);
-            ordenesObject.put("detallesWS", jsonArray);
+            ordenesObject.put("ordenWS", ordenObject);
+            ordenesObject.put("detallesWS", detallesordenesArray);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -388,6 +390,8 @@ public class DetalleOrden extends Fragment {
                     if (resultado) {
                         //segun yo abre el fragmento de las ordenes
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
+                        MainActivity.orden = null;
+                        MainActivity.listadetalle.clear();
                         Fragment fragment = new Ordenes();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);

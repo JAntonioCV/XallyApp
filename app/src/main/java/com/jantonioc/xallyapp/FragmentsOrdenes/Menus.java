@@ -25,11 +25,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -46,9 +44,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -86,7 +82,7 @@ public class Menus extends Fragment {
     @Override
     public void onCreateOptionsMenu(android.view.Menu menu, MenuInflater inflater) {
 
-        inflater.inflate(R.menu.toolbar_menu, menu);
+        inflater.inflate(R.menu.search_menu, menu);
 
         //Menu item para buscar
         MenuItem searchitem = menu.findItem(R.id.action_search);
@@ -188,6 +184,7 @@ public class Menus extends Fragment {
                                 obj.getInt("id"),
                                 obj.getString("codigo"),
                                 obj.getString("descripcion"),
+                                obj.getString("tiempoestimado"),
                                 obj.getDouble("precio"),
                                 obj.getBoolean("estado"),
                                 obj.getInt("idcategoria")
@@ -326,6 +323,7 @@ public class Menus extends Fragment {
                         detalleDeOrden.setNombreplatillo(obj.getDescripcion());
                         detalleDeOrden.setPrecio(obj.getPrecio());
                         detalleDeOrden.setMenuid(obj.getId());
+                        detalleDeOrden.setEstado(false);
 
                         MainActivity.listadetalle.add(detalleDeOrden);
 
