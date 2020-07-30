@@ -22,6 +22,7 @@ import com.jantonioc.xallyapp.FragmentsOrdenes.AddCategoria;
 import com.jantonioc.xallyapp.FragmentsOrdenes.DetalleOrden;
 import com.jantonioc.xallyapp.FragmentsOrdenes.Ordenes;
 import com.jantonioc.xallyapp.FragmentsOrdenes.SelectCategoria;
+import com.jantonioc.xallyapp.FragmentsPedidos.Pedidos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //Cambiar el texto del toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("Categoria");
+        toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
         //Floating boton
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if(listadetalle.size()==0)
                 {
                     //Si es vacia muestra un toast
-                    Toast.makeText(MainActivity.this,"Aun no se ha agregado una orden",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,"Aun no se ha agregado detalles de orden",Toast.LENGTH_SHORT).show();
                 }
                 else
                 {
@@ -87,11 +88,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //Abrimos por defecto como primer interfaz el fragment ordenes
         fragment = new Ordenes();
-
-/*        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.content, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();*/
 
         //Cargamos el fragment
         cargarFragment(fragment);
@@ -151,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_pedidos:
             case 3:
-                fragment = new SelectCategoria();
+                fragment = new Pedidos();
                 break;
         }
 

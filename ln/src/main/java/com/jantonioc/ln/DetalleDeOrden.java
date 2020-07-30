@@ -8,17 +8,20 @@ public class DetalleDeOrden implements Serializable {
     private int cantidad;
     private String nota;
     private String nombreplatillo;
+    private Boolean estado;
     private double precio;
     private int menuid;
 
     public DetalleDeOrden() {
     }
 
-    public DetalleDeOrden(int id, int cantidad, String nota, String nombreplatillo, int ordenid, int menuid) {
+    public DetalleDeOrden(int id, int cantidad, String nota, String nombreplatillo, Boolean estado, double precio, int menuid) {
         this.id = id;
         this.cantidad = cantidad;
         this.nota = nota;
         this.nombreplatillo = nombreplatillo;
+        this.estado = estado;
+        this.precio = precio;
         this.menuid = menuid;
     }
 
@@ -54,9 +57,21 @@ public class DetalleDeOrden implements Serializable {
         this.nombreplatillo = nombreplatillo;
     }
 
-    public double getPrecio() { return precio; }
+    public Boolean getEstado() {
+        return estado;
+    }
 
-    public void setPrecio(double precio) { this.precio = precio; }
+    public void setEstado(Boolean estado) {
+        this.estado = estado;
+    }
+
+    public double getPrecio() {
+        return precio;
+    }
+
+    public void setPrecio(double precio) {
+        this.precio = precio;
+    }
 
     public int getMenuid() {
         return menuid;

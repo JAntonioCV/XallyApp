@@ -7,6 +7,7 @@ public class Menu implements Serializable {
     private int id;
     private String codigo;
     private String descripcion;
+    private String tiempoestimado;
     private double precio;
     private boolean estado;
     private int idcategoria;
@@ -14,10 +15,11 @@ public class Menu implements Serializable {
     public Menu() {
     }
 
-    public Menu(int id, String codigo, String descripcion, double precio, boolean estado, int idcategoria) {
+    public Menu(int id, String codigo, String descripcion, String tiempoestimado, double precio, boolean estado, int idcategoria) {
         this.id = id;
         this.codigo = codigo;
         this.descripcion = descripcion;
+        this.tiempoestimado = tiempoestimado;
         this.precio = precio;
         this.estado = estado;
         this.idcategoria = idcategoria;
@@ -47,6 +49,14 @@ public class Menu implements Serializable {
         this.descripcion = descripcion;
     }
 
+    public String getTiempoestimado() {
+        return tiempoestimado;
+    }
+
+    public void setTiempoestimado(String tiempoestimado) {
+        this.tiempoestimado = tiempoestimado;
+    }
+
     public double getPrecio() {
         return precio;
     }
@@ -70,5 +80,4 @@ public class Menu implements Serializable {
     public void setIdcategoria(int idcategoria) {
         this.idcategoria = idcategoria;
     }
-
 }
