@@ -1,5 +1,6 @@
 package com.jantonioc.xallyapp.Adaptadores;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,6 +67,12 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
         }
 
         private void setDetalleOrden(final DetalleDeOrden detalleOrden) {
+
+            //agregar un color a las que tienen true
+            if(detalleOrden.getFromservice()==true)
+            {
+                itemView.setBackgroundColor(Color.GRAY);
+            }
 
             TextView nombrePlatillo = itemView.findViewById(R.id.itemplatillo);
             TextView nota = itemView.findViewById(R.id.itemnota);
