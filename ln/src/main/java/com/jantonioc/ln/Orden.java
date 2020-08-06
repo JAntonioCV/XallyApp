@@ -1,6 +1,8 @@
 package com.jantonioc.ln;
 
-public class Orden {
+import java.io.Serializable;
+
+public class Orden implements Serializable {
 
     private int id;
     private String codigo;

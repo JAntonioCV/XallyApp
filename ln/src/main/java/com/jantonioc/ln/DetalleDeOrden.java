@@ -11,11 +11,12 @@ public class DetalleDeOrden implements Serializable {
     private Boolean estado;
     private double precio;
     private int menuid;
+    private Boolean fromservice;
 
     public DetalleDeOrden() {
     }
 
-    public DetalleDeOrden(int id, int cantidad, String nota, String nombreplatillo, Boolean estado, double precio, int menuid) {
+    public DetalleDeOrden(int id, int cantidad, String nota, String nombreplatillo, Boolean estado, double precio, int menuid, Boolean fromservice) {
         this.id = id;
         this.cantidad = cantidad;
         this.nota = nota;
@@ -23,6 +24,7 @@ public class DetalleDeOrden implements Serializable {
         this.estado = estado;
         this.precio = precio;
         this.menuid = menuid;
+        this.fromservice = fromservice;
     }
 
     public int getId() {
@@ -79,5 +81,13 @@ public class DetalleDeOrden implements Serializable {
 
     public void setMenuid(int menuid) {
         this.menuid = menuid;
+    }
+
+    public Boolean getFromservice() {
+        return fromservice;
+    }
+
+    public void setFromservice(Boolean fromservice) {
+        this.fromservice = fromservice;
     }
 }
