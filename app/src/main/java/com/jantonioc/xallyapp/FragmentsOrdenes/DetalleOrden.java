@@ -390,8 +390,11 @@ public class DetalleOrden extends Fragment {
                     if (resultado) {
                         //segun yo abre el fragmento de las ordenes
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
-                        MainActivity.orden = null;
+
+                        MainActivity.orden = new Orden();
                         MainActivity.listadetalle.clear();
+                        MainActivity.modpedidos=false;
+
                         Fragment fragment = new Ordenes();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);

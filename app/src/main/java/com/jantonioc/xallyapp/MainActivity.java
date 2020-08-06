@@ -12,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -22,8 +23,10 @@ import com.jantonioc.xallyapp.FragmentsOrdenes.AddCategoria;
 import com.jantonioc.xallyapp.FragmentsOrdenes.DetalleOrden;
 import com.jantonioc.xallyapp.FragmentsOrdenes.Ordenes;
 import com.jantonioc.xallyapp.FragmentsOrdenes.SelectCategoria;
+import com.jantonioc.xallyapp.FragmentsPedidos.DetallesDeOrden;
 import com.jantonioc.xallyapp.FragmentsPedidos.Pedidos;
 
+import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +36,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Fragment fragment = null;
 
     //Instancia de la clase Orden, Detalle Orden
-    public static List<DetalleDeOrden> listadetalle= new ArrayList<>();
+    public static List<DetalleDeOrden> listadetalle = new ArrayList<>();
     public static Orden orden = new Orden();
+    public static boolean modpedidos;
 
 
     @Override
@@ -57,16 +61,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onClick(View view) {
 
                 //Validar si la lista es vacia o no
-                if(listadetalle.size()==0)
-                {
+
+                if (listadetalle.isEmpty()) {
                     //Si es vacia muestra un toast
-                    Toast.makeText(MainActivity.this,"Aun no se ha agregado detalles de orden",Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
+                    Toast.makeText(MainActivity.this, "No se han agregdo detalles a la orden", Toast.LENGTH_SHORT).show();
+
+                } else if (MainActivity.modpedidos == false) {
                     //abriendo el fragment del detalle si tiene datos
-                    fragment=null;
-                    fragment=new DetalleOrden();
+                    fragment = null;
+                    fragment = new DetalleOrden();
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.replace(R.id.content, fragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+
+                } else {
+
+                    FragmentManager fm = getSupportFragmentManager();
+                    for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
+                        fm.popBackStack();
+                    }
+
+                    //Abrir el fragmento del detalle de Orden
+                    Fragment fragment = new DetallesDeOrden();
+                    //Pasar parametros entre fragment
+                    Bundle bundle = new Bundle();
+                    //mandar el objeto serializado
+                    bundle.putInt("idorden",orden.getId());
+                    fragment.setArguments(bundle);
                     FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     transaction.replace(R.id.content, fragment);
                     transaction.addToBackStack(null);
@@ -138,16 +160,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         switch (item.getItemId()) {
             case 1:
-                case R.id.nav_menu:
+            case R.id.nav_menu:
                 fragment = new Ordenes();
+                MainActivity.listadetalle.clear();
+                MainActivity.orden = new Orden();
+                MainActivity.modpedidos = false;
                 break;
             case 2:
-                case R.id.nav_orden:
+            case R.id.nav_orden:
                 fragment = new AddCategoria();
                 break;
             case R.id.nav_pedidos:
             case 3:
                 fragment = new Pedidos();
+                MainActivity.listadetalle.clear();
+                MainActivity.orden = new Orden();
+                MainActivity.modpedidos = false;
                 break;
         }
 
@@ -164,6 +192,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     //Cargar el fragment
     private void cargarFragment(Fragment fragment) {
+
+        FragmentManager fm = getSupportFragmentManager();
+        for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
+            fm.popBackStack();
+        }
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.content, fragment);
