@@ -27,6 +27,7 @@ import com.jantonioc.xallyapp.Adaptadores.PedidosAdapter;
 import com.jantonioc.xallyapp.FragmentsOrdenes.Categorias;
 import com.jantonioc.xallyapp.FragmentsOrdenes.DetalleMenu;
 import com.jantonioc.xallyapp.FragmentsOrdenes.Ordenes;
+import com.jantonioc.xallyapp.MainActivity;
 import com.jantonioc.xallyapp.R;
 import com.jantonioc.xallyapp.VolleySingleton;
 
@@ -153,7 +154,13 @@ public class Pedidos extends Fragment {
                         adapter.setClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                detalleOrden(listaPedidos.get(lista.getChildAdapterPosition(v)));
+
+                                    if(listaPedidos.get(lista.getChildAdapterPosition(v)).getId()!=MainActivity.orden.getId())
+                                    {
+                                        MainActivity.listadetalle.clear();
+                                    }
+
+                                detalleOrden(listaPedidos.get(lista.getChildAdapterPosition(v)).getId());
                             }
                         });
 
@@ -201,18 +208,15 @@ public class Pedidos extends Fragment {
     }
 
 
-    private void detalleOrden(Orden orden)
+    private void detalleOrden(int idorden)
     {
-
-        Toast.makeText(rootView.getContext(), orden.getCodigo(), Toast.LENGTH_SHORT).show();
-
         //Abrir el fragmento del detalle de Orden
         Fragment fragment = new DetallesDeOrden();
         //Pasar parametros entre fragment
-        //Bundle bundle = new Bundle();
+        Bundle bundle = new Bundle();
         //mandar el objeto serializado
-        //bundle.putSerializable("Menu", menu);
-        //fragment.setArguments(bundle);
+        bundle.putInt("idorden",idorden);
+        fragment.setArguments(bundle);
         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.content, fragment);
         transaction.addToBackStack(null);
