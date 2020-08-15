@@ -41,6 +41,30 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="?android:attr/textColorSecondary" />
 
+            <TextView
+                android:id="@+id/itemestado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="estado:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <TextView
+                android:id="@+id/itemcliente"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="cliente:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <TextView
+                android:id="@+id/itemmesero"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="mesero:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="?android:attr/textColorSecondary" />
+
         </LinearLayout>
 
 </androidx.cardview.widget.CardView>

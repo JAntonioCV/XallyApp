@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 } else {
 
+                    //si mod pedidos es true abrimos detalle de orden
                     FragmentManager fm = getSupportFragmentManager();
                     for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
                         fm.popBackStack();
@@ -161,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case 1:
             case R.id.nav_menu:
+                //limpiamos los auxiliares
                 fragment = new Ordenes();
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
@@ -172,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_pedidos:
             case 3:
+                //limpiamos los auxiliares
                 fragment = new Pedidos();
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
@@ -193,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //Cargar el fragment
     private void cargarFragment(Fragment fragment) {
 
+        //sacamos de la pila o cola por que si no se montan unas vistas con otras
         FragmentManager fm = getSupportFragmentManager();
         for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
             fm.popBackStack();

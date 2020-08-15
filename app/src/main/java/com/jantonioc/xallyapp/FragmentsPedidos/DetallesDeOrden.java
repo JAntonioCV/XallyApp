@@ -93,9 +93,10 @@ public class DetallesDeOrden extends Fragment {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
-                //Al agregar detalle abrir el fragmento categoria
+                //auxiliares para agregar nuevos detalles a una orden
                 MainActivity.modpedidos = true;
                 MainActivity.orden.setId(idorden);
+                //Al agregar detalle abrir el fragmento categoria
                 Fragment fragment = new Categorias();
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.content, fragment);
@@ -114,27 +115,34 @@ public class DetallesDeOrden extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        //toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
         toolbar.setTitle("Detalles de Orden");
 
+        //fab botton
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
+        //vista
         rootView = inflater.inflate(R.layout.fragment_detalles_de_orden, container, false);
 
+        //la lista
         lista = rootView.findViewById(R.id.recyclerViewDetalleOrden);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
 
+        //progressbar
         progressBar = rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
+        //tex total y enviar modificaciones
         total = rootView.findViewById(R.id.total);
         btnenviar = rootView.findViewById(R.id.btnenviar);
 
         btnenviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //si hay cambios enviar si no mostrar toast
                 if(haycambios())
                 {
                     enviarModificacion(listadetalle);
@@ -169,6 +177,7 @@ public class DetallesDeOrden extends Fragment {
         @Override
         public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
 
+            //si es del servicio ya esta en la db y no se debe borrar
             if(listadetalle.get(viewHolder.getAdapterPosition()).getFromservice()==true)
             {
                 Toast.makeText(rootView.getContext(), "No se puede eliminar", Toast.LENGTH_SHORT).show();
@@ -210,16 +219,16 @@ public class DetallesDeOrden extends Fragment {
 
     private void enviarModificacion(List<DetalleDeOrden> detallenuevo)
     {
-        //nuevo array para las nuevas ordenes
+        //nuevo array para los nuevos detalles
         JSONArray detallesordenesArray = new JSONArray();
 
-        //sacando solo las nuevas ordenes y agregandolas al nuevo arreglo
+        //sacando solo los nuevos detalles y agregandolas al nuevo arreglo
         for(DetalleDeOrden detalleActual :detallenuevo )
         {
             if(detalleActual.getFromservice() == false)
             {
                 try {
-                    //objeto donde se guardara una orden
+                    //objeto donde se guardara el detalle
                     JSONObject detallesordenes = new JSONObject();
 
                     //Guardando datos del detalle de orden
@@ -253,7 +262,6 @@ public class DetallesDeOrden extends Fragment {
         }
 
         //Enviar la orden al server
-
         String uri = "http://192.168.1.52/MenuAPI/API/DetallesDeOrdenWS/NuevosDetalle";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, uri, nuevosDetallesObject, new Response.Listener<JSONObject>() {
             @Override
@@ -265,13 +273,15 @@ public class DetallesDeOrden extends Fragment {
                     Boolean resultado = response.getBoolean("Resultado");
 
                     if (resultado) {
-                        //segun yo abre el fragmento de las ordenes
+                        //segun yo abre el fragmento de las Pedidos
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
 
+                        //Cambiar auxiliares si salio bien
                         MainActivity.orden = new Orden();
                         MainActivity.listadetalle.clear();
                         MainActivity.modpedidos=false;
 
+                        //abrir fragmento pedidos
                         Fragment fragment = new Pedidos();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
@@ -298,6 +308,7 @@ public class DetallesDeOrden extends Fragment {
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
     }
 
+    //si hay cambios en la lista por medio del campo que solo tienen true los consultados
     private boolean haycambios()
     {
         for(DetalleDeOrden detalleactual :listadetalle)
@@ -311,10 +322,11 @@ public class DetallesDeOrden extends Fragment {
         return false;
     }
 
+    //obtener las ordenes de un detalle
     private void ObtenerDetalles(final int idOrden) {
         listadetalle = new ArrayList<>();
 
-        String uri = "http://192.168.1.52/MenuAPI/API/DetallesDeOrdenWS/DetalleDeOrden/" + idOrden;
+        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/DetallesDeOrdenWS/DetalleDeOrden/" + idOrden;
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -328,7 +340,7 @@ public class DetallesDeOrden extends Fragment {
                         //Obteniendo los objetos
                         JSONObject obj = jsonArray.getJSONObject(i);
 
-                        //Obteniendo los datos y convirtiendolos a menu
+                        //Obteniendo los datos y convirtiendolos a Detalle orden
                         DetalleDeOrden detalleDeOrden = new DetalleDeOrden(
                                 obj.getInt("id"),
                                 obj.getInt("cantidadorden"),
@@ -357,14 +369,6 @@ public class DetallesDeOrden extends Fragment {
                         adapter = new DetalleOrdenAdapter(listadetalle);
 
                         total.setText("$" + calcularTotal(listadetalle));
-
-                        adapter.setClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-
-
-                            }
-                        });
 
                         lista.setAdapter(adapter);
 

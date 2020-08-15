@@ -113,6 +113,7 @@ public class Menus extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
     }
 
+    //crecion del menu barra superior
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         setHasOptionsMenu(true);
@@ -146,10 +147,8 @@ public class Menus extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Toast.makeText(rootView.getContext(), "Actualizando el Menu", Toast.LENGTH_SHORT).show();
                 listaMenu(idcategoria);
                 adapter.notifyDataSetChanged();
-                Toast.makeText(rootView.getContext(), "Menu Actualizado", Toast.LENGTH_SHORT).show();
                 swipeRefreshLayout.setRefreshing(false);
 
             }
@@ -165,7 +164,7 @@ public class Menus extends Fragment {
     private void listaMenu(final int idcategoria) {
         listamenu = new ArrayList<>();
 
-        String uri = "http://192.168.1.52/MenuAPI/API/MenusWS/MenusCategoria/" + idcategoria;
+        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/MenusWS/MenusCategoria/" + idcategoria;
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -187,6 +186,7 @@ public class Menus extends Fragment {
                                 obj.getString("tiempoestimado"),
                                 obj.getDouble("precio"),
                                 obj.getBoolean("estado"),
+                                obj.getString("ruta"),
                                 obj.getInt("idcategoria")
                         );
 
@@ -285,6 +285,7 @@ public class Menus extends Fragment {
             txtplatillo.setText(obj.getDescripcion());
             txtcantidad.getEditText().setText("1");
 
+            //si no hay en exitencia no puede agregar
             if(cantidad == 0)
             {
                 txtexistencia.setText("Existencia: 0");
@@ -294,15 +295,8 @@ public class Menus extends Fragment {
                 ordenar.setEnabled(false);
                 txtcantidad.getEditText().setText("");
             }
-            else if (cantidad == -1) {
-                txtexistencia.setText("Existencia: Sin producto asociado");
-
-                cantidadtxt.setEnabled(false);
-                notatxt.setEnabled(false);
-                ordenar.setEnabled(false);
-                txtcantidad.getEditText().setText("");
-
-            } else if (cantidad == -2) {
+            //no es inventariado
+            else if (cantidad == -2) {
                 txtexistencia.setText("Existencia: No inventariado");
             } else {
                 txtexistencia.setText("Existencia: " + String.valueOf(cantidad));
@@ -344,13 +338,14 @@ public class Menus extends Fragment {
 
     //Obtener la existencia de un producto de el bar
     private void Obtenerexitencia(final Menu menu) {
-        String uri = "http://192.168.1.52/MenuAPI/API/OrdenesWS/Existencia/" + menu.getId();
+        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/InventarioWS/Existencia/" + menu.getId();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
                 cantidad = Integer.valueOf(response);
                 detalleOrden(menu, cantidad);
+
             }
 
         }, new Response.ErrorListener() {

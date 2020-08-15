@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.xallyapp.R;
 
+import java.security.PrivateKey;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -68,27 +69,20 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
 
         private void setDetalleOrden(final DetalleDeOrden detalleOrden) {
 
-            //agregar un color a las que tienen true
-            if(detalleOrden.getFromservice()==true)
-            {
-                itemView.setBackgroundColor(Color.GRAY);
-            }
-
             TextView nombrePlatillo = itemView.findViewById(R.id.itemplatillo);
             TextView nota = itemView.findViewById(R.id.itemnota);
             TextView cantidad = itemView.findViewById(R.id.itemcantidad);
             TextView precio = itemView.findViewById(R.id.itemprecio);
             TextView pretotal = itemView.findViewById(R.id.itempretotal);
+            TextView estado = itemView.findViewById(R.id.itemestado);
 
 
             nombrePlatillo.setText(detalleOrden.getNombreplatillo());
-            if(detalleOrden.getNota().isEmpty())
-            {
-                nota.setText("Sin nota");
-            }else
-            {
-                nota.setText("Nota: "+detalleOrden.getNota());
-            }
+
+            nota.setText("Nota: "+obtenerNota(detalleOrden.getNota()));
+
+            estado.setText("Estado: "+obtenerEstado(detalleOrden.getEstado(),detalleOrden.getFromservice()));
+
             cantidad.setText("Cantidad: "+Integer.valueOf(detalleOrden.getCantidad()).toString());
 
             precio.setText("Precio: $"+Double.valueOf(detalleOrden.getPrecio()).toString());
@@ -105,6 +99,29 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
             valor=precio*cantidad;
 
             return format.format(valor);
+        }
+
+        private String obtenerNota(String nota)
+        {
+            if(nota.isEmpty())
+            {
+                return "Sin nota";
+            }
+            return nota.equals("Sin nota") ? "Sin nota" : nota;
+        }
+
+        private String obtenerEstado(boolean estado,boolean fromservice)
+        {
+            if(estado == false && fromservice == false)
+            {
+                return "Sin Enviar";
+            }
+            else if(estado == false && fromservice == true )
+            {
+                return "Ordenado";
+            }
+
+            return "Atendido";
         }
 
     }

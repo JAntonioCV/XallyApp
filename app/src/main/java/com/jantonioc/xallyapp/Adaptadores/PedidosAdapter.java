@@ -73,15 +73,56 @@ public class PedidosAdapter extends RecyclerView.Adapter<PedidosAdapter.holder> 
             TextView codigo = itemView.findViewById(R.id.itemcodigo);
             TextView fecha = itemView.findViewById(R.id.itemfecha);
             TextView hora = itemView.findViewById(R.id.itemhora);
+            TextView estado = itemView.findViewById(R.id.itemestado);
+            TextView cliente = itemView.findViewById(R.id.itemcliente);
+            TextView mesero = itemView.findViewById(R.id.itemmesero);
 
             codigo.setText("Codigo: " + obj.getCodigo());
             fecha.setText("Fecha: " + obj.getFechaorden());
             hora.setText("Hora: " + obj.getTiempoorden());
+            estado.setText("Estado: "+Obtenerestado(obj.getEstado()));
+
+            cliente.setText("Cliente: " + OBtenerTipoCliente(obj.getCliente()) );
+
+            mesero.setText("Mesero:"+ obj.getMesero());
+
         }
 
+        private String OBtenerTipoCliente(String cliente)
+        {
+            return cliente.equals("DEFAULT USER") ? "Visitante" : cliente;
+        }
 
+        private String Obtenerestado(int estado)
+        {
+            String estados;
+
+            switch (estado)
+            {
+                case 1:
+                    estados="Ordenado";
+                    break;
+
+                case 2:
+                    estados="Sin Facturar";
+                    break;
+
+                case 3:
+                    estados="Facturada";
+                    break;
+
+                    default:
+                        estados = "sin estado";
+                        break;
+
+            }
+
+            return estados;
+        }
 
     }
+
+
 
 
 

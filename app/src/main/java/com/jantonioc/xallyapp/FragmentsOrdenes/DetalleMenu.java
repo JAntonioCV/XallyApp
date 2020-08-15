@@ -97,7 +97,7 @@ public class DetalleMenu extends Fragment {
     //obtener informacion de los platillos
     private void detalleMenu(final Menu menu) {
 
-        String uri = "http://192.168.1.52/MenuAPI/API/IngredientesWS/IngredientesMenu/" + menu.getId();
+        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/IngredientesWS/IngredientesMenu/" + menu.getId();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

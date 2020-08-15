@@ -61,10 +61,9 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
         //Mostrnado el fab
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.show();
-
-
+        //vista
         rootView = inflater.inflate(R.layout.fragment_categorias, container, false);
-
+        //RecyclerView
         lista = rootView.findViewById(R.id.recyclerViewCategoria);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
@@ -75,10 +74,8 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Toast.makeText(rootView.getContext(), "Actualizando las categorias", Toast.LENGTH_SHORT).show();
                 listaCategoria();
                 adapter.notifyDataSetChanged();
-                Toast.makeText(rootView.getContext(), "Categoria Actualizada", Toast.LENGTH_SHORT).show();
                 swipeRefreshLayout.setRefreshing(false);
 
             }
@@ -118,7 +115,7 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
         //Instancia de la lista
         listacategorias = new ArrayList<>();
 
-        String uri = "http://192.168.1.52/MenuAPI/API/CategoriasWS/Categorias";
+        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/CategoriasWS/Categorias";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

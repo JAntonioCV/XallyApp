@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -55,19 +56,25 @@ public class Ordenes extends Fragment {
 
     //obtener los formatos de fecha y hora
     private DateFormat hourFormat = new SimpleDateFormat("HH:mm:ss");
-    private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+    private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
+
+    private RadioButton rbHuesped;
+    private RadioButton rbvisitante;
+
 
 
     public Ordenes() {
         // Required empty public constructor
     }
 
+    //creacion del menu
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
     }
 
+    //opcion del menu y listener al darle click recargar el WS
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.reload_fragment, menu);
@@ -105,29 +112,50 @@ public class Ordenes extends Fragment {
         txtfecha = rootView.findViewById(R.id.fechaorden);
         txthora = rootView.findViewById(R.id.horaorden);
 
+        rbHuesped = rootView.findViewById(R.id.rbhuesped);
+        rbvisitante = rootView.findViewById(R.id.rbvisitante);
+
         //Obteniendo el ultimo codigo
         obtenerCodigo();
 
         btnAgregarOrden = rootView.findViewById(R.id.btnagregarpedido);
 
-        btnAgregarOrden.setEnabled(false);
-
-        //------------------------------------------------
-        //no puedo agregar la orden si no tengo el codigo
-        //------------------------------------------------
-
         btnAgregarOrden.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
         //Al agregar orden abrir el fragmento categoria
-                Fragment fragment = new Categorias();
-                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.content, fragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+
+                if(txtcodigo.getEditText().getText().toString().isEmpty())
+                {
+                    Toast.makeText(rootView.getContext(),"Sin codigo actualize, por favor",Toast.LENGTH_LONG).show();
+                }else
+                {
+                    if(rbHuesped.isChecked())
+                    {
+                        Fragment fragment = new Clientes();
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.content, fragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+
+                    }else if(rbvisitante.isChecked())
+                    {
+                        MainActivity.orden.setIdcliente(-1);
+                        Fragment fragment = new Categorias();
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.content, fragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                    else
+                    {
+                        Toast.makeText(rootView.getContext(),"Seleccione el tipo de cliente",Toast.LENGTH_LONG).show();
+                    }
+
+                }
             }
         });
-
 
         return rootView;
 
@@ -135,7 +163,7 @@ public class Ordenes extends Fragment {
     }
 
     private void obtenerCodigo() {
-        String uri = "http://192.168.1.52/MenuAPI/API/OrdenesWS/UltimoCodigo";
+        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/OrdenesWS/UltimoCodigo";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -143,16 +171,15 @@ public class Ordenes extends Fragment {
                 //Si la respuesta es distinta de nula tenemos codigo de lo contrario no
                 if (response != null) {
 
-                    txtcodigo.getEditText().setText(response.replace("\"", ""));
+                    txtcodigo.getEditText().setText(response);
                     txtfecha.getEditText().setText(dateFormat.format(date));
                     txthora.getEditText().setText(hourFormat.format(date));
 
-                    MainActivity.orden.setCodigo(txtcodigo.getEditText().getText().toString());
+                    MainActivity.orden.setCodigo(Integer.valueOf(txtcodigo.getEditText().getText().toString()));
                     MainActivity.orden.setFechaorden(txtfecha.getEditText().getText().toString());
                     MainActivity.orden.setTiempoorden(txthora.getEditText().getText().toString());
-                    MainActivity.orden.setEstado(false);
+                    MainActivity.orden.setEstado(1);
 
-                    btnAgregarOrden.setEnabled(true);
 
                 } else {
                     Toast.makeText(rootView.getContext(), "Error al obtener el codigo, intente de nuevo", Toast.LENGTH_SHORT).show();
@@ -178,6 +205,7 @@ public class Ordenes extends Fragment {
         });
 
 
+        //politica de reintentos
         request.setRetryPolicy(new DefaultRetryPolicy(5000,DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
     }

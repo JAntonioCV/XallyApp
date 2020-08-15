@@ -1,4 +1,4 @@
-package com.jantonioc.xallyapp.FragmentsPedidos;
+package com.jantonioc.xallyapp.FragmentsOrdenes;
 
 
 import android.os.Bundle;
@@ -22,11 +22,12 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.jantonioc.ln.Orden;
-import com.jantonioc.xallyapp.Adaptadores.PedidosAdapter;
-import com.jantonioc.xallyapp.FragmentsOrdenes.Categorias;
-import com.jantonioc.xallyapp.FragmentsOrdenes.DetalleMenu;
-import com.jantonioc.xallyapp.FragmentsOrdenes.Ordenes;
+import com.jantonioc.ln.Categoria;
+import com.jantonioc.ln.Cliente;
+import com.jantonioc.ln.Menu;
+import com.jantonioc.xallyapp.Adaptadores.CategoriaAdapter;
+import com.jantonioc.xallyapp.Adaptadores.ClientesAdapter;
+import com.jantonioc.xallyapp.Adaptadores.MenuAdapter;
 import com.jantonioc.xallyapp.MainActivity;
 import com.jantonioc.xallyapp.R;
 import com.jantonioc.xallyapp.VolleySingleton;
@@ -35,26 +36,23 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class Pedidos extends Fragment {
+public class Clientes extends Fragment {
 
     private View rootView;
     private RecyclerView lista;
+    private List<Cliente> listaclientes;
     private ProgressBar progressBar;
-    private List<Orden> listaPedidos;
-
-    private PedidosAdapter adapter;
-
+    private ClientesAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    public Pedidos() {
+
+    public Clientes() {
         // Required empty public constructor
     }
 
@@ -63,18 +61,17 @@ public class Pedidos extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        //cambiar el nombre del toolbar
+        //toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Pedidos");
+        toolbar.setTitle("Clientes");
 
-        //ocultar el floating boton
+        //ocultando el fab
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
-
-        //vista del fragment
-        rootView = inflater.inflate(R.layout.fragment_pedidos, container, false);
-        //recycler view
-        lista = rootView.findViewById(R.id.recyclerViewPedidos);
+        //vista
+        rootView = inflater.inflate(R.layout.fragment_clientes, container, false);
+        //Recyclerview
+        lista = rootView.findViewById(R.id.recyclerViewClientes);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
         //progressbar
@@ -87,27 +84,26 @@ public class Pedidos extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                listaPedidos();
+                listaCliente();
                 adapter.notifyDataSetChanged();
                 swipeRefreshLayout.setRefreshing(false);
 
             }
         });
 
-        //listar los pedidos
-        listaPedidos();
-
+        listaCliente();
 
         // Inflate the layout for this fragment
         return rootView;
     }
 
-    private void listaPedidos()
-    {
-        //limpiar los pedidos al consultar al WS
-        listaPedidos= new ArrayList<>();
 
-        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/OrdenesWS/Ordenes";
+    //obtener la lista de clientes del sistema
+    private void listaCliente()
+    {
+        listaclientes = new ArrayList<>();
+
+        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/ClientesWS/Clientes";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -118,57 +114,38 @@ public class Pedidos extends Fragment {
 
                     //Recorriendo el arreglo paara obtener los objetos
                     for (int i = 0; i < jsonArray.length(); i++) {
-
                         //Obteniendo los objetos
                         JSONObject obj = jsonArray.getJSONObject(i);
 
-                        //obteniendo la fecha en Date
-                        String jsondate = obj.getString("fechaorden");
-
-                        //Convirtiendo la fecha a legible
-                        String fecha = ConvertirJsonFecha(jsondate);
-
-                        //Convirtiendo el tiempo a legible
-                        String hora = ConvertirJsonTiempo(jsondate);
-
-                        //Obteniendo los datos y convirtiendolos a Orden
-                        Orden orden = new Orden(
+                        //Obteniendo los datos y convirtiendolos a menu
+                        Cliente cliente = new Cliente(
                                 obj.getInt("id"),
-                                obj.getInt("codigo"),
-                                fecha,
-                                hora,
-                                obj.getInt("estado"),
-                                obj.getInt("clienteid"),
-                                obj.getInt("meseroid"),
-                                obj.getString("cliente"),
-                                obj.getString("mesero")
-
+                                obj.getString("identificacion"),
+                                obj.getString("nombre"),
+                                obj.getString("apellido")
                         );
 
-                        //Agregando a la lista de orden
-                        listaPedidos.add(orden);
+                        //Agregando a la lista del menu
+                        listaclientes.add(cliente);
                     }
 
-                    //Si la lista es mayor que 0 adaptamos y hacemos el evento on click
-                    if (listaPedidos.size() > 0) {
+                    //Si la lista es mayor que 0 adaptamos y hacemos el evento on click de la lista
+                    if (listaclientes.size() > 0) {
 
                         progressBar.setVisibility(View.GONE);
 
-                        adapter = new PedidosAdapter(listaPedidos);
+                        adapter = new ClientesAdapter(listaclientes);
 
-                        //listener al darle click
                         adapter.setClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-
-                                //si el id de la lista de ordenes es distinta de la guardada para modificar borramos la lista auxiliar
-                                    if(listaPedidos.get(lista.getChildAdapterPosition(v)).getId() != MainActivity.orden.getId())
-                                    {
-                                        MainActivity.listadetalle.clear();
-                                    }
-
-                                    //ver el detalle de orden
-                                detalleOrden(listaPedidos.get(lista.getChildAdapterPosition(v)).getId());
+                                //abrir el fragment de las categorias
+                                MainActivity.orden.setIdcliente(listaclientes.get(lista.getChildAdapterPosition(v)).getId());
+                                Fragment fragment = new Categorias();
+                                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                                transaction.replace(R.id.content, fragment);
+                                transaction.addToBackStack(null);
+                                transaction.commit();
                             }
                         });
 
@@ -178,7 +155,7 @@ public class Pedidos extends Fragment {
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
                         progressBar.setVisibility(View.GONE);
-                        Toast.makeText(rootView.getContext(), "No se poseen ordenes para el dia de hoy", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(rootView.getContext(), "No se encuentran clientes registrados", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
                         for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
@@ -214,46 +191,5 @@ public class Pedidos extends Fragment {
 
 
     }
-
-
-    private void detalleOrden(int idorden)
-    {
-        //Abrir el fragmento del detalle de Orden
-        Fragment fragment = new DetallesDeOrden();
-        //Pasar parametros entre fragment
-        Bundle bundle = new Bundle();
-        //mandar el objeto serializado
-        bundle.putInt("idorden",idorden);
-        fragment.setArguments(bundle);
-        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.content, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-
-
-
-    //obtener la fecha en forato legible para el usuario
-    private static String ConvertirJsonFecha(String jsonfecha)
-    {
-
-        jsonfecha=jsonfecha.replace("/Date(", "").replace(")/", "");
-        long tiempo = Long.parseLong(jsonfecha);
-        Date fecha= new Date(tiempo);
-
-        return new SimpleDateFormat("dd/MM/yyyy").format(fecha);
-    }
-
-    //obtener el tiempo en formato legible para el usuario
-    private static String ConvertirJsonTiempo(String jsonfecha)
-    {
-        jsonfecha=jsonfecha.replace("/Date(", "").replace(")/", "");
-        long tiempo = Long.parseLong(jsonfecha);
-        Date fecha= new Date(tiempo);
-
-        return new SimpleDateFormat("hh:mm a").format(fecha);
-    }
-
-
 
 }

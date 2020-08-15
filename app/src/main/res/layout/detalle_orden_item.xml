@@ -40,6 +40,14 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
             <TextView
+                android:id="@+id/itemestado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="4dp"
+                android:text="Nota(Opcional)"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+            <TextView
                 android:id="@+id/itemcantidad"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -38,7 +38,6 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/horaorden"
         android:layout_width="match_parent"
-        android:paddingBottom="4dp"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_height="wrap_content">
 
@@ -51,7 +50,28 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="4dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rbhuesped"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Huesped" />
+
+        <RadioButton
+            android:id="@+id/rbvisitante"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Visitante" />
+    </RadioGroup>
+
+    <Button
             android:id="@+id/btnagregarpedido"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

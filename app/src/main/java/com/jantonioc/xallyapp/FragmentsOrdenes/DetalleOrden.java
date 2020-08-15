@@ -98,25 +98,27 @@ public class DetalleOrden extends Fragment {
 
         //Validar si la lista tiene datos envia si no, muestra un mensaje
         btnenviar = rootView.findViewById(R.id.btnenviar);
-        if (MainActivity.listadetalle.size() > 0) {
+
 
             btnenviar.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(rootView.getContext(), "Enviando", Toast.LENGTH_SHORT).show();
+                    //validando que la lista no este vacia al enviar
+                    if (MainActivity.listadetalle.size() > 0) {
 
-                    enviarOrden(MainActivity.listadetalle, MainActivity.orden);
+                        enviarOrden(MainActivity.listadetalle, MainActivity.orden);
+
+                    } else {
+
+                        Toast.makeText(rootView.getContext(), "El Detalle esta vacio", Toast.LENGTH_SHORT).show();
+
+                    }
                 }
             });
 
-        } else {
 
-            Toast.makeText(rootView.getContext(), "El Detalle esta vacio", Toast.LENGTH_SHORT).show();
-            btnenviar.setEnabled(false);
-        }
 
         //swipe to delete
-
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
@@ -326,10 +328,13 @@ public class DetalleOrden extends Fragment {
         //Creamos el objeto de la orden :v
         JSONObject ordenObject = new JSONObject();
         try {
+
             ordenObject.put("codigo", orden.getCodigo());
             ordenObject.put("fechaorden", orden.getFechaorden());
             ordenObject.put("tiempoorden", orden.getTiempoorden());
-            ordenObject.put("estado", orden.isEstado());
+            ordenObject.put("estado", orden.getEstado());
+            ordenObject.put("meseroid",1);
+            ordenObject.put("clienteid",orden.getIdcliente());
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -377,7 +382,7 @@ public class DetalleOrden extends Fragment {
 
         //Enviar la orden al server
 
-        String uri = "http://192.168.1.52/MenuAPI/API/DetallesDeOrdenWS/OrdenesDetalle";
+        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/DetallesDeOrdenWS/OrdenesDetalle";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, uri, ordenesObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -390,7 +395,7 @@ public class DetalleOrden extends Fragment {
                     if (resultado) {
                         //segun yo abre el fragmento de las ordenes
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
-
+                        //reiniciando variables nesesarias
                         MainActivity.orden = new Orden();
                         MainActivity.listadetalle.clear();
                         MainActivity.modpedidos=false;
@@ -447,7 +452,7 @@ public class DetalleOrden extends Fragment {
 
     //Obtener la existencia de un producto de el bar
     private void Obtenerexitencia(final DetalleDeOrden detalleDeOrden, final int position) {
-        String uri = "http://192.168.1.52/MenuAPI/API/OrdenesWS/Existencia/" + detalleDeOrden.getMenuid();
+        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/InventarioWS/Existencia/" + detalleDeOrden.getMenuid();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

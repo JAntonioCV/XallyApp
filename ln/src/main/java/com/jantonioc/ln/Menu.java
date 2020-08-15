@@ -10,18 +10,20 @@ public class Menu implements Serializable {
     private String tiempoestimado;
     private double precio;
     private boolean estado;
+    private String ruta;
     private int idcategoria;
 
     public Menu() {
     }
 
-    public Menu(int id, String codigo, String descripcion, String tiempoestimado, double precio, boolean estado, int idcategoria) {
+    public Menu(int id, String codigo, String descripcion, String tiempoestimado, double precio, boolean estado, String ruta, int idcategoria) {
         this.id = id;
         this.codigo = codigo;
         this.descripcion = descripcion;
         this.tiempoestimado = tiempoestimado;
         this.precio = precio;
         this.estado = estado;
+        this.ruta = ruta;
         this.idcategoria = idcategoria;
     }
 
@@ -73,6 +75,14 @@ public class Menu implements Serializable {
         this.estado = estado;
     }
 
+    public String getRuta() {
+        return ruta;
+    }
+
+    public void setRuta(String ruta) {
+        this.ruta = ruta;
+    }
+
     public int getIdcategoria() {
         return idcategoria;
     }
@@ -81,3 +91,5 @@ public class Menu implements Serializable {
         this.idcategoria = idcategoria;
     }
 }
+
+

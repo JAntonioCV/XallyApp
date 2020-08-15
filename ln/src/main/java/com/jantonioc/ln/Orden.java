@@ -5,20 +5,28 @@ import java.io.Serializable;
 public class Orden implements Serializable {
 
     private int id;
-    private String codigo;
+    private int codigo;
     private String fechaorden;
     private String tiempoorden;
-    private boolean estado;
+    private int estado;
+    private int idcliente;
+    private int idmesero;
+    private String cliente;
+    private String mesero;
 
     public Orden() {
     }
 
-    public Orden(int id, String codigo, String fechaorden, String tiempoorden, boolean estado) {
+    public Orden(int id, int codigo, String fechaorden, String tiempoorden, int estado, int idcliente, int idmesero, String cliente, String mesero) {
         this.id = id;
         this.codigo = codigo;
         this.fechaorden = fechaorden;
         this.tiempoorden = tiempoorden;
         this.estado = estado;
+        this.idcliente = idcliente;
+        this.idmesero = idmesero;
+        this.cliente = cliente;
+        this.mesero = mesero;
     }
 
     public int getId() {
@@ -29,11 +37,11 @@ public class Orden implements Serializable {
         this.id = id;
     }
 
-    public String getCodigo() {
+    public int getCodigo() {
         return codigo;
     }
 
-    public void setCodigo(String codigo) {
+    public void setCodigo(int codigo) {
         this.codigo = codigo;
     }
 
@@ -53,11 +61,45 @@ public class Orden implements Serializable {
         this.tiempoorden = tiempoorden;
     }
 
-    public boolean isEstado() {
+    public int getEstado() {
         return estado;
     }
 
-    public void setEstado(boolean estado) {
+    public void setEstado(int estado) {
         this.estado = estado;
     }
+
+    public int getIdcliente() {
+        return idcliente;
+    }
+
+    public void setIdcliente(int idcliente) {
+        this.idcliente = idcliente;
+    }
+
+    public int getIdmesero() {
+        return idmesero;
+    }
+
+    public void setIdmesero(int idmesero) {
+        this.idmesero = idmesero;
+    }
+
+    public String getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(String cliente) {
+        this.cliente = cliente;
+    }
+
+    public String getMesero() {
+        return mesero;
+    }
+
+    public void setMesero(String mesero) {
+        this.mesero = mesero;
+    }
 }
+
+

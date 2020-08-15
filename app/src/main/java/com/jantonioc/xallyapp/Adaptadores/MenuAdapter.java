@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.jantonioc.ln.Menu;
 import com.jantonioc.xallyapp.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,8 +146,13 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.holder> implem
         private void setMenu(final Menu obj)
         {
 
+            ImageView imagen = itemView.findViewById(R.id.itemimagen);
             TextView nombre =itemView.findViewById(R.id.itemnombre);
             TextView precio =itemView.findViewById(R.id.itemprecio);
+
+            String ruta = obj.getRuta();
+
+            Picasso.with(itemView.getContext()).load(ruta).fit().centerCrop().into(imagen);
             nombre.setText(obj.getDescripcion());
             precio.setText("Precio: $"+String.valueOf(obj.getPrecio()));
         }
