@@ -69,7 +69,6 @@ public class DetallesDeOrden extends Fragment {
 
     private int idorden;
 
-    private int cantidad;
 
 
     public DetallesDeOrden() {

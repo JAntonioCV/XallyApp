@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="4dp"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clickable="true"
     app:cardElevation="4dp"
     app:cardUseCompatPadding="true"
     tools:ignore="Overdraw">
@@ -44,7 +46,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="4dp"
-                android:text="Nota(Opcional)"
+                android:text="estado"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
             <TextView

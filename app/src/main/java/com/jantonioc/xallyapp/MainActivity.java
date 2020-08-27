@@ -4,9 +4,11 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -17,8 +19,11 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Orden;
+import com.jantonioc.xallyapp.FragmentsCuenta.PedidosCuenta;
 import com.jantonioc.xallyapp.FragmentsOrdenes.AddCategoria;
 import com.jantonioc.xallyapp.FragmentsOrdenes.DetalleOrden;
 import com.jantonioc.xallyapp.FragmentsOrdenes.Ordenes;
@@ -39,6 +44,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static List<DetalleDeOrden> listadetalle = new ArrayList<>();
     public static Orden orden = new Orden();
     public static boolean modpedidos;
+    public static List<String> listaClientes;
+    public static List<List<DetalleDeOrden>> listadetalles;
+
+
+    private TextInputLayout txtcantidad;
+    private TextInputEditText cantidadtxt;
+
+    private Button calcular;
+
+    private Integer cantidadClientes;
+
+
+    private static final int INTERVALO = 2000;
+    private long tiempoPrimerClick;
+
 
 
     @Override
@@ -124,7 +144,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0)
+            {
+               super.onBackPressed();
+            }
+            else
+            {
+                if (tiempoPrimerClick + INTERVALO > System.currentTimeMillis()){
+                    super.onBackPressed();
+                    return;
+                }else {
+                    Toast.makeText(this, "Vuelve a presionar para salir", Toast.LENGTH_SHORT).show();
+                }
+                tiempoPrimerClick = System.currentTimeMillis();
+            }
+
         }
     }
 
@@ -160,7 +194,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fragment = null;
 
         switch (item.getItemId()) {
-            case 1:
             case R.id.nav_menu:
                 //limpiamos los auxiliares
                 fragment = new Ordenes();
@@ -168,14 +201,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 MainActivity.orden = new Orden();
                 MainActivity.modpedidos = false;
                 break;
-            case 2:
+
             case R.id.nav_orden:
                 fragment = new AddCategoria();
                 break;
+
             case R.id.nav_pedidos:
-            case 3:
                 //limpiamos los auxiliares
                 fragment = new Pedidos();
+                MainActivity.listadetalle.clear();
+                MainActivity.orden = new Orden();
+                MainActivity.modpedidos = false;
+                break;
+
+            case R.id.nav_dividir:
+                dialogoCantidad();
+                fragment = new PedidosCuenta();
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
                 MainActivity.modpedidos = false;
@@ -206,5 +247,99 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         transaction.replace(R.id.content, fragment);
         transaction.commit();
     }
+
+
+    public static void crearClientes(int cantidad)
+    {
+        listaClientes = new ArrayList<>();
+
+        for(int i=0; i < cantidad; i++)
+        {
+            String cliente="Cliente " + (i+1);
+            listaClientes.add(cliente);
+        }
+    }
+
+    public static void crearListas(int cantidad)
+    {
+        listadetalles = new ArrayList<>();
+        for(int i=0; i < cantidad; i++)
+        {
+            List<DetalleDeOrden> cliente = new ArrayList<>();
+            listadetalles.add(cliente);
+        }
+    }
+
+    public static void limpiarListas()
+    {
+        for(int i=0; i < MainActivity.listadetalles.size(); i++)
+        {
+                MainActivity.listadetalles.get(i).clear();
+        }
+
+
+    }
+
+
+    private void dialogoCantidad()
+    {
+        //Abrimos la modal agregar el nuevo detalle de orden
+        final AlertDialog builder = new AlertDialog.Builder(MainActivity.this).create();
+
+        View view = getLayoutInflater().inflate(R.layout.cantidad_persona, null);
+
+        txtcantidad = view.findViewById(R.id.cantidad);
+        cantidadtxt = view.findViewById(R.id.cantidadtxt);
+        calcular = view.findViewById(R.id.btncalcular);
+
+        calcular.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(!validarCantidad())
+                {
+                    return;
+                }else
+                {
+                    cantidadClientes = Integer.valueOf(txtcantidad.getEditText().getText().toString().trim());
+                    //Creando la lista de clientes y la lista de lista
+                    MainActivity.crearClientes(cantidadClientes);
+                    MainActivity.crearListas(cantidadClientes);
+
+                    builder.cancel();
+                }
+
+
+            }
+        });
+
+        builder.setView(view);
+        builder.setCancelable(false);
+        builder.setCanceledOnTouchOutside(false);
+        builder.create();
+        builder.show();
+    }
+
+    private boolean validarCantidad()
+    {
+        boolean isValidate = true;
+
+        String cantidadInput = txtcantidad.getEditText().getText().toString().trim();
+
+        if (cantidadInput.isEmpty()) {
+            isValidate = false;
+            txtcantidad.setError("Cantidad no puede estar vacio");
+
+        } else if (Integer.valueOf(cantidadInput) <= 0) {
+            isValidate = false;
+            txtcantidad.setError("La cantidad no puede ser menor a 1");
+
+        } else {
+            txtcantidad.setError(null);
+        }
+
+        return isValidate;
+    }
+
 
 }
