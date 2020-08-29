@@ -51,6 +51,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.jantonioc.xallyapp.Constans.URLBASE;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -261,7 +263,7 @@ public class DetallesDeOrden extends Fragment {
         }
 
         //Enviar la orden al server
-        String uri = "http://192.168.1.52/MenuAPI/API/DetallesDeOrdenWS/NuevosDetalle";
+        String uri = URLBASE+"DetallesDeOrdenWS/NuevosDetalle";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, uri, nuevosDetallesObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -325,7 +327,7 @@ public class DetallesDeOrden extends Fragment {
     private void ObtenerDetalles(final int idOrden) {
         listadetalle = new ArrayList<>();
 
-        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/DetallesDeOrdenWS/DetalleDeOrden/" + idOrden;
+        String uri = URLBASE+"DetallesDeOrdenWS/DetalleDeOrden/" + idOrden;
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

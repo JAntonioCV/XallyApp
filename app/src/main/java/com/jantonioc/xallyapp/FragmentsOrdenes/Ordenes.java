@@ -39,6 +39,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static com.jantonioc.xallyapp.Constans.URLBASE;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -163,7 +165,7 @@ public class Ordenes extends Fragment {
     }
 
     private void obtenerCodigo() {
-        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/OrdenesWS/UltimoCodigo";
+        String uri = URLBASE+"OrdenesWS/UltimoCodigo";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

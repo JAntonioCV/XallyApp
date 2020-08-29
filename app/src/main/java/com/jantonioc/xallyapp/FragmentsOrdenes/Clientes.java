@@ -39,6 +39,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.jantonioc.xallyapp.Constans.URLBASE;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -103,7 +105,7 @@ public class Clientes extends Fragment {
     {
         listaclientes = new ArrayList<>();
 
-        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/ClientesWS/Clientes";
+        String uri = URLBASE+"ClientesWS/Clientes";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

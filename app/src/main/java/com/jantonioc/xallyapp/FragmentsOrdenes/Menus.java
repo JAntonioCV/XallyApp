@@ -46,6 +46,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.jantonioc.xallyapp.Constans.URLBASE;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -164,7 +166,7 @@ public class Menus extends Fragment {
     private void listaMenu(final int idcategoria) {
         listamenu = new ArrayList<>();
 
-        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/MenusWS/MenusCategoria/" + idcategoria;
+        String uri = URLBASE+"MenusWS/MenusCategoria/" + idcategoria;
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -338,7 +340,7 @@ public class Menus extends Fragment {
 
     //Obtener la existencia de un producto de el bar
     private void Obtenerexitencia(final Menu menu) {
-        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/InventarioWS/Existencia/" + menu.getId();
+        String uri = URLBASE+"InventarioWS/Existencia/" + menu.getId();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

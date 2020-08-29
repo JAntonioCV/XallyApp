@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.jantonioc.xallyapp.Constans.URLBASE;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -107,7 +109,7 @@ public class Pedidos extends Fragment {
         //limpiar los pedidos al consultar al WS
         listaPedidos= new ArrayList<>();
 
-        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/OrdenesWS/Ordenes";
+        String uri = URLBASE+"OrdenesWS/Ordenes";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

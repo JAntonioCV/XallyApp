@@ -42,6 +42,8 @@ import org.json.JSONObject;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import static com.jantonioc.xallyapp.Constans.URLBASE;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -382,7 +384,7 @@ public class DetalleOrden extends Fragment {
 
         //Enviar la orden al server
 
-        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/DetallesDeOrdenWS/OrdenesDetalle";
+        String uri = URLBASE+"DetallesDeOrdenWS/OrdenesDetalle";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, uri, ordenesObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -452,7 +454,7 @@ public class DetalleOrden extends Fragment {
 
     //Obtener la existencia de un producto de el bar
     private void Obtenerexitencia(final DetalleDeOrden detalleDeOrden, final int position) {
-        String uri = "http://192.168.1.52/ProyectoXalli_Gentelella/InventarioWS/Existencia/" + detalleDeOrden.getMenuid();
+        String uri = URLBASE+"InventarioWS/Existencia/" + detalleDeOrden.getMenuid();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

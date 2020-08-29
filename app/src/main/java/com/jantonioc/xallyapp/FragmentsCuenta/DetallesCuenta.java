@@ -173,7 +173,7 @@ public class DetallesCuenta extends Fragment {
                         detalleDeOrden.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
                         detalleDeOrden.setNombreplatillo(obj.getNombreplatillo());
                         detalleDeOrden.setPrecio(obj.getPrecio());
-                        detalleDeOrden.setId(obj.getId());
+                        detalleDeOrden.setMenuid(obj.getMenuid());
 
                         if(yaExiste(detalleDeOrden))
                         {
@@ -253,7 +253,7 @@ public class DetallesCuenta extends Fragment {
     private boolean yaExiste(final DetalleDeOrden obj) {
 
         for (DetalleDeOrden detalleActual : MainActivity.listadetalles.get(groupPosition)) {
-            if (obj.getId() == detalleActual.getId()) {
+            if (obj.getMenuid() == detalleActual.getMenuid()) {
                 detalleActual.setCantidad(obj.getCantidad()+detalleActual.getCantidad());
                 return true;
             }

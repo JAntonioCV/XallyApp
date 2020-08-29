@@ -229,7 +229,7 @@ public class CuentasAdapter extends BaseExpandableListAdapter {
                 {
                     DetalleDeOrden detalleDeOrden= new DetalleDeOrden();
 
-                    detalleDeOrden.setId(MainActivity.listadetalles.get(gposition).get(cposition).getId());
+                    detalleDeOrden.setMenuid(MainActivity.listadetalles.get(gposition).get(cposition).getMenuid());
                     detalleDeOrden.setPrecio(MainActivity.listadetalles.get(gposition).get(cposition).getPrecio());
                     detalleDeOrden.setNombreplatillo(MainActivity.listadetalles.get(gposition).get(cposition).getNombreplatillo());
                     detalleDeOrden.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
@@ -294,7 +294,7 @@ public class CuentasAdapter extends BaseExpandableListAdapter {
     private boolean yaExiste( DetalleDeOrden obj, int gposition) {
 
         for (DetalleDeOrden detalleActual : MainActivity.listadetalle) {
-            if (obj.getId() == detalleActual.getId()) {
+            if (obj.getMenuid() == detalleActual.getMenuid()) {
                 detalleActual.setCantidad(obj.getCantidad()+detalleActual.getCantidad());
                 return true;
             }
