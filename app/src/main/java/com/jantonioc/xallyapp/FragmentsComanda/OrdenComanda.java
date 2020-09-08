@@ -1,9 +1,8 @@
-package com.jantonioc.xallyapp.FragmentsCuenta;
+package com.jantonioc.xallyapp.FragmentsComanda;
 
 
 import android.os.Bundle;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -15,8 +14,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -24,14 +23,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import com.jantonioc.ln.DetalleDeOrden;
+import com.jantonioc.ln.Comanda;
 import com.jantonioc.ln.Orden;
-import com.jantonioc.xallyapp.Adaptadores.DetalleCuentasAdapter;
+import com.jantonioc.xallyapp.Adaptadores.OrdenComandaAdapter;
 import com.jantonioc.xallyapp.Adaptadores.PedidosAdapter;
 import com.jantonioc.xallyapp.FragmentsOrdenes.Ordenes;
-import com.jantonioc.xallyapp.FragmentsPedidos.Pedidos;
 import com.jantonioc.xallyapp.MainActivity;
 import com.jantonioc.xallyapp.R;
 import com.jantonioc.xallyapp.VolleySingleton;
@@ -50,26 +46,21 @@ import static com.jantonioc.xallyapp.Constans.URLBASE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PedidosCuenta extends Fragment {
+public class OrdenComanda extends Fragment {
 
     private View rootView;
     private RecyclerView lista;
     private ProgressBar progressBar;
     private List<Orden> listaPedidos;
 
-    private PedidosAdapter adapter;
+    private OrdenComandaAdapter adapter;
 
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    private TextInputLayout txtcantidad;
-    private TextInputEditText cantidadtxt;
-    private Button calcular;
-    private Integer cantidadClientes=0;
+    private int idcliente;
 
 
-
-
-    public PedidosCuenta() {
+    public OrdenComanda() {
         // Required empty public constructor
     }
 
@@ -80,7 +71,7 @@ public class PedidosCuenta extends Fragment {
 
         //cambiar el nombre del toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Pedidos");
+        toolbar.setTitle("Ordenes");
 
         //ocultar el floating boton
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
@@ -96,13 +87,16 @@ public class PedidosCuenta extends Fragment {
         progressBar = rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
+        Bundle bundle = getArguments();
+        idcliente = bundle.getInt("idCliente",0);
+
         //swipe to refresh
         swipeRefreshLayout = rootView.findViewById(R.id.swipe);
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                listaPedidos();
+                listaPedidos(idcliente);
                 adapter.notifyDataSetChanged();
                 swipeRefreshLayout.setRefreshing(false);
 
@@ -110,17 +104,17 @@ public class PedidosCuenta extends Fragment {
         });
 
         //listar los pedidos
-        listaPedidos();
+        listaPedidos(idcliente);
 
         return rootView;
     }
 
-    private void listaPedidos()
+    private void listaPedidos(int idcliente)
     {
         //limpiar los pedidos al consultar al WS
         listaPedidos= new ArrayList<>();
 
-        String uri = URLBASE+"OrdenesWS/Ordenes";
+        String uri = URLBASE+"OrdenesWS/OrdenesPorHuesped/"+idcliente;
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -167,17 +161,22 @@ public class PedidosCuenta extends Fragment {
 
                         progressBar.setVisibility(View.GONE);
 
-                        adapter = new PedidosAdapter(listaPedidos);
+                        adapter = new OrdenComandaAdapter(listaPedidos);
 
                         //listener al darle click
                         adapter.setClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                //ver el detalle de orden
 
-                                dialogoCantidad(listaPedidos.get(lista.getChildAdapterPosition(v)).getId());
-
-                                //clientes(listaPedidos.get(lista.getChildAdapterPosition(v)).getId());
+                                Fragment fragment = new DetallesComanda();
+                                Bundle bundle = new Bundle();
+                                bundle.putInt("idOrden",listaPedidos.get(lista.getChildAdapterPosition(v)).getId());
+                                MainActivity.comanda.setIdorden(listaPedidos.get(lista.getChildAdapterPosition(v)).getId());
+                                fragment.setArguments(bundle);
+                                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                                transaction.replace(R.id.content, fragment);
+                                transaction.addToBackStack(null);
+                                transaction.commit();
                             }
                         });
 
@@ -224,23 +223,6 @@ public class PedidosCuenta extends Fragment {
 
     }
 
-    private void clientes(int idorden)
-    {
-        //if(MainActivity.orden.getId() != idorden)
-        //{
-            obtenerDetalles(idorden);
-            MainActivity.limpiarListas();
-        //}
-
-        //Abrir el fragmento del detalle de los platillos
-        Fragment fragment = new ListaCuentas();
-        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.content, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-
-    }
-
     //obtener la fecha en forato legible para el usuario
     private static String ConvertirJsonFecha(String jsonfecha)
     {
@@ -262,123 +244,6 @@ public class PedidosCuenta extends Fragment {
         return new SimpleDateFormat("hh:mm a").format(fecha);
     }
 
-
-    private void obtenerDetalles(int idOrden)
-    {
-        //MainActivity.orden.setId(idOrden);
-        MainActivity.listadetalle = new ArrayList<>();
-
-        String uri = URLBASE+"DetallesDeOrdenWS/DetalleDeOrdenCuenta/" + idOrden;
-        StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-
-                    //obteniendo el arreglo desde la respuesta
-                    JSONArray jsonArray = new JSONArray(response);
-
-                    //Recorriendo el arreglo paara obtener los objetos
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        //Obteniendo los objetos
-                        JSONObject obj = jsonArray.getJSONObject(i);
-
-                        //Obteniendo los datos y convirtiendolos a Detalle orden
-                        DetalleDeOrden detalleDeOrden = new DetalleDeOrden(
-                                obj.getInt("id"),
-                                obj.getInt("cantidadorden"),
-                                obj.getString("notaorden"),
-                                obj.getString("nombreplatillo"),
-                                obj.getBoolean("estado"),
-                                obj.getDouble("preciounitario"),
-                                obj.getInt("menuid"),
-                                obj.getBoolean("fromservice")
-                        );
-
-                        //Agregando a la lista del menu
-                        MainActivity.listadetalle.add(detalleDeOrden);
-                    }
-
-                } catch (JSONException ex) {
-
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
-                }
-            }
-
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
-
-            }
-        });
-
-        VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
-    }
-
-    private void dialogoCantidad(final int id)
-    {
-        //Abrimos la modal agregar el nuevo detalle de orden
-        final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
-
-        View view = getLayoutInflater().inflate(R.layout.cantidad_persona, null);
-
-        txtcantidad = view.findViewById(R.id.cantidad);
-        cantidadtxt = view.findViewById(R.id.cantidadtxt);
-        calcular = view.findViewById(R.id.btncalcular);
-
-        calcular.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if(!validarCantidad())
-                {
-                    return;
-                }else
-                {
-                    cantidadClientes = Integer.valueOf(txtcantidad.getEditText().getText().toString().trim());
-                    //Creando la lista de clientes y la lista de lista
-                    MainActivity.crearClientes(cantidadClientes);
-                    MainActivity.crearListas(cantidadClientes);
-
-                    clientes(id);
-
-                    builder.cancel();
-                }
-
-
-            }
-        });
-
-        builder.setView(view);
-        //builder.setCancelable(false);
-        //builder.setCanceledOnTouchOutside(false);
-        builder.create();
-        builder.show();
-    }
-
-    private boolean validarCantidad()
-    {
-        boolean isValidate = true;
-
-        String cantidadInput = txtcantidad.getEditText().getText().toString().trim();
-
-        if (cantidadInput.isEmpty()) {
-            isValidate = false;
-            txtcantidad.setError("Cantidad no puede estar vacio");
-
-        } else if (Integer.valueOf(cantidadInput) <= 0) {
-            isValidate = false;
-            txtcantidad.setError("La cantidad no puede ser menor a 1");
-
-        } else {
-            txtcantidad.setError(null);
-        }
-
-        return isValidate;
-    }
 
 
 }

@@ -21,17 +21,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.jantonioc.ln.Comanda;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Orden;
+import com.jantonioc.xallyapp.FragmentsComanda.AgregarComanda;
+import com.jantonioc.xallyapp.FragmentsComanda.ClientesComanda;
 import com.jantonioc.xallyapp.FragmentsCuenta.PedidosCuenta;
-import com.jantonioc.xallyapp.FragmentsOrdenes.AddCategoria;
 import com.jantonioc.xallyapp.FragmentsOrdenes.DetalleOrden;
 import com.jantonioc.xallyapp.FragmentsOrdenes.Ordenes;
-import com.jantonioc.xallyapp.FragmentsOrdenes.SelectCategoria;
 import com.jantonioc.xallyapp.FragmentsPedidos.DetallesDeOrden;
 import com.jantonioc.xallyapp.FragmentsPedidos.Pedidos;
 
-import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,20 +46,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static boolean modpedidos;
     public static List<String> listaClientes;
     public static List<List<DetalleDeOrden>> listadetalles;
-
-
-    private TextInputLayout txtcantidad;
-    private TextInputEditText cantidadtxt;
-
-    private Button calcular;
-
-    private Integer cantidadClientes;
-
+    public static Comanda comanda = new Comanda();
 
     private static final int INTERVALO = 2000;
     private long tiempoPrimerClick;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,29 +152,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    //Opciones del menu lateral
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    //Opciones del menu de los 3 puntos
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+//    //Opciones del menu lateral
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.main, menu);
+//        return true;
+//    }
+//
+//    //Opciones del menu de los 3 puntos
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+//        int id = item.getItemId();
+//
+//        //noinspection SimplifiableIfStatement
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
+//    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -202,8 +192,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 MainActivity.modpedidos = false;
                 break;
 
-            case R.id.nav_orden:
-                fragment = new AddCategoria();
+            case R.id.nav_comanda:
+                fragment = new ClientesComanda();
                 break;
 
             case R.id.nav_pedidos:
@@ -215,7 +205,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
 
             case R.id.nav_dividir:
-                dialogoCantidad();
                 fragment = new PedidosCuenta();
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
@@ -278,67 +267,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
 
-    }
-
-
-    private void dialogoCantidad()
-    {
-        //Abrimos la modal agregar el nuevo detalle de orden
-        final AlertDialog builder = new AlertDialog.Builder(MainActivity.this).create();
-
-        View view = getLayoutInflater().inflate(R.layout.cantidad_persona, null);
-
-        txtcantidad = view.findViewById(R.id.cantidad);
-        cantidadtxt = view.findViewById(R.id.cantidadtxt);
-        calcular = view.findViewById(R.id.btncalcular);
-
-        calcular.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if(!validarCantidad())
-                {
-                    return;
-                }else
-                {
-                    cantidadClientes = Integer.valueOf(txtcantidad.getEditText().getText().toString().trim());
-                    //Creando la lista de clientes y la lista de lista
-                    MainActivity.crearClientes(cantidadClientes);
-                    MainActivity.crearListas(cantidadClientes);
-
-                    builder.cancel();
-                }
-
-
-            }
-        });
-
-        builder.setView(view);
-        builder.setCancelable(false);
-        builder.setCanceledOnTouchOutside(false);
-        builder.create();
-        builder.show();
-    }
-
-    private boolean validarCantidad()
-    {
-        boolean isValidate = true;
-
-        String cantidadInput = txtcantidad.getEditText().getText().toString().trim();
-
-        if (cantidadInput.isEmpty()) {
-            isValidate = false;
-            txtcantidad.setError("Cantidad no puede estar vacio");
-
-        } else if (Integer.valueOf(cantidadInput) <= 0) {
-            isValidate = false;
-            txtcantidad.setError("La cantidad no puede ser menor a 1");
-
-        } else {
-            txtcantidad.setError(null);
-        }
-
-        return isValidate;
     }
 
 

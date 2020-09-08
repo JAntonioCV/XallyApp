@@ -65,8 +65,6 @@ public class DetalleOrden extends Fragment {
 
     int cantidad;
 
-
-    //FloatingActionButton fabenviar;
     private Button btnenviar;
     private TextView total;
 

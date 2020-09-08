@@ -12,13 +12,13 @@
                     android:icon="@drawable/ic_restaurant_menu"
                     android:title="Agregar Orden" />
                 <item
-                    android:id="@+id/nav_orden"
-                    android:icon="@drawable/ic_shopping_cart"
-                    android:title="Detalle Orden" />
+                    android:id="@+id/nav_comanda"
+                    android:icon="@drawable/ic_photo_camera"
+                    android:title="Guardar Comanda" />
                 <item
                     android:id="@+id/nav_pedidos"
                     android:icon="@drawable/ic_access_time"
-                    android:title="Pedidos" />
+                    android:title="Ordenes" />
 
                 <item
                     android:id="@+id/nav_dividir"
@@ -26,7 +26,7 @@
                     android:title="Dividir Cuenta" />
             </group>
         </menu>
-    </item>M
+    </item>
 
 
 

@@ -117,6 +117,8 @@ public class Ordenes extends Fragment {
         rbHuesped = rootView.findViewById(R.id.rbhuesped);
         rbvisitante = rootView.findViewById(R.id.rbvisitante);
 
+        rbvisitante.setChecked(true);
+
         //Obteniendo el ultimo codigo
         obtenerCodigo();
 

@@ -8,7 +8,6 @@
     <ExpandableListView
         android:id="@+id/expandiblelist"
         android:layout_width="match_parent"
-        android:groupIndicator="@null"
         android:layout_height="match_parent"/>
 
 </RelativeLayout>
