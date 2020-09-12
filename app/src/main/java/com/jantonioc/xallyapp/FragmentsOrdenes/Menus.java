@@ -323,6 +323,7 @@ public class Menus extends Fragment {
                         detalleDeOrden.setFromservice(false);
 
                         MainActivity.listadetalle.add(detalleDeOrden);
+                        Toast.makeText(rootView.getContext(), "Agregado al detalle de orden", Toast.LENGTH_SHORT).show();
 
                         //Para que se cierre automaticamente al darla guardar
                         builder.cancel();
@@ -452,6 +453,7 @@ public class Menus extends Fragment {
                             //modifiamos el detalle para que se guarden los nuevos datos
                             detalleActual.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
                             detalleActual.setNota(txtnota.getEditText().getText().toString());
+                            Toast.makeText(rootView.getContext(), "Detalle de orden modificado", Toast.LENGTH_SHORT).show();
                             builder.cancel();
                         }
                     }

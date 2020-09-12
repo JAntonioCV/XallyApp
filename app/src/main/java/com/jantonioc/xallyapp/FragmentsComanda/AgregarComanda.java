@@ -79,6 +79,7 @@ import java.util.Map;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Retrofit;
@@ -209,7 +210,7 @@ public class AgregarComanda extends Fragment {
 
     private void consultarFoto() {
 
-        String uri = URLBASE+"Comanda/consultarFoto/"+MainActivity.comanda.getIdorden();
+        String uri = URLBASE+"ComandaWS/consultarFoto/"+MainActivity.comanda.getIdorden();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -324,6 +325,7 @@ public class AgregarComanda extends Fragment {
                             new MediaScannerConnection.OnScanCompletedListener() {
                                 @Override
                                 public void onScanCompleted(String path, Uri uri) {
+
                                 }
                             });
 
@@ -404,19 +406,16 @@ public class AgregarComanda extends Fragment {
 
         UploadAPI uploadAPI = retrofit.create(UploadAPI.class);
 
-        Call<ResultadoWS> call = uploadAPI.uploadImage(photo,ordenid);
-
-        call.enqueue(new Callback<ResultadoWS>() {
+        uploadAPI.uploadImage(photo,ordenid).enqueue(new Callback<ResultadoWS>() {
             @Override
             public void onResponse(Call<ResultadoWS> call, retrofit2.Response<ResultadoWS> response) {
 
-                if(response.isSuccessful())
-                {
+                if (response.isSuccessful()) {
+
                     String msj = response.body().getMensaje();
                     boolean resultado = response.body().isResultado();
 
-                    if(resultado)
-                    {
+                    if (resultado) {
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
                         //Abrir el fragmento del detalle de los platillos
@@ -424,20 +423,84 @@ public class AgregarComanda extends Fragment {
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
                         transaction.commit();
-                    }
-                    else
-                    {
+                    } else {
                         imagencomanda.setVisibility(View.VISIBLE);
                         Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
                     }
                 }
+
             }
+
             @Override
             public void onFailure(Call<ResultadoWS> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
                 imagencomanda.setVisibility(View.VISIBLE);
-                Toast.makeText(rootView.getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(rootView.getContext(),t.getMessage(), Toast.LENGTH_SHORT).show();
+
             }
         });
+
+//        uploadAPI.uploadImage(photo).enqueue(new Callback<ResponseBody>() {
+//            @Override
+//            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
+//
+//                if (response.isSuccessful()) {
+//                    progressBar.setVisibility(View.GONE);
+//                    Toast.makeText(rootView.getContext(), "Almacenado con Exito", Toast.LENGTH_SHORT).show();
+//                    Fragment fragment = new ClientesComanda();
+//                    FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+//                    transaction.replace(R.id.content, fragment);
+//                    transaction.commit();
+//                } else
+//                {
+//                    Toast.makeText(rootView.getContext(),"ah ocurrido un error inesperado intente de nuevo", Toast.LENGTH_SHORT).show();
+//                    progressBar.setVisibility(View.GONE);
+//                    imagencomanda.setVisibility(View.VISIBLE);
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                progressBar.setVisibility(View.GONE);
+//                imagencomanda.setVisibility(View.VISIBLE);
+//                Toast.makeText(rootView.getContext(),t.getMessage(), Toast.LENGTH_SHORT).show();
+//            }
+//        });
+
+//        Call<ResultadoWS> call = uploadAPI.uploadImage(photo);
+//
+//        call.enqueue(new Callback<ResultadoWS>() {
+//            @Override
+//            public void onResponse(Call<ResultadoWS> call, retrofit2.Response<ResultadoWS> response) {
+//
+//                if(response.isSuccessful())
+//                {
+//                    String msj = response.body().getMensaje();
+//                    boolean resultado = response.body().isResultado();
+//
+//                    if(resultado)
+//                    {
+//                        //progressBar.setVisibility(View.GONE);
+//                        Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
+//                        //Abrir el fragmento del detalle de los platillos
+//                        Fragment fragment = new ClientesComanda();
+//                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+//                        transaction.replace(R.id.content, fragment);
+//                        transaction.commit();
+//                    }
+//                    else
+//                    {
+//                        imagencomanda.setVisibility(View.VISIBLE);
+//                        Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
+//                    }
+//                }
+//            }
+//            @Override
+//            public void onFailure(Call<ResultadoWS> call, Throwable t) {
+//                imagencomanda.setVisibility(View.VISIBLE);
+//                Toast.makeText(rootView.getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+//            }
+//        });
     }
 
 }

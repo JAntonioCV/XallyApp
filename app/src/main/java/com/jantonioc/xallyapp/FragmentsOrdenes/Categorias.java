@@ -1,13 +1,19 @@
 package com.jantonioc.xallyapp.FragmentsOrdenes;
 
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -46,11 +52,53 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
     private  ProgressBar progressBar;
     private CategoriaAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private SearchView searchView;
+
 
     public Categorias() {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreateOptionsMenu(android.view.Menu menu, MenuInflater inflater) {
+
+        inflater.inflate(R.menu.search_menu, menu);
+
+        //Menu item para buscar
+        MenuItem searchitem = menu.findItem(R.id.action_search);
+
+        //vista del searchView del buscador
+        searchView = (SearchView) searchitem.getActionView();
+
+        //evento del cambio de texto en el buscador
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return false;
+            }
+        });
+
+        //Cambiar el texto y colores por defecto por otro
+        EditText editText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        editText.setHint(getResources().getString(R.string.search_hint));
+        editText.setHintTextColor(Color.WHITE);
+        editText.setTextColor(Color.WHITE);
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    //crecion del menu barra superior
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        super.onCreate(savedInstanceState);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

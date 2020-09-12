@@ -3,23 +3,29 @@ package com.jantonioc.xallyapp.Adaptadores;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jantonioc.ln.Categoria;
+import com.jantonioc.ln.Menu;
 import com.jantonioc.xallyapp.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class CategoriaAdapter extends RecyclerView.Adapter<CategoriaAdapter.holder> {
+public class CategoriaAdapter extends RecyclerView.Adapter<CategoriaAdapter.holder> implements Filterable {
 
     private final List<Categoria> lista;
+    private final List<Categoria> listafull;
     private final Evento evt;
 
     public CategoriaAdapter(List<Categoria> lista, Evento evt) {
         this.lista = lista;
+        listafull = new ArrayList<>(lista);
         this.evt = evt;
     }
 
@@ -42,6 +48,46 @@ public class CategoriaAdapter extends RecyclerView.Adapter<CategoriaAdapter.hold
     public int getItemCount() {
         return lista.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return listacategoriafilter;
+    }
+
+    private Filter listacategoriafilter= new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<Categoria> filteredList=new ArrayList<>();
+            if(constraint== null || constraint.length() == 0)
+            {
+                filteredList.addAll(listafull);
+            }else
+            {
+                String filterPattern = constraint.toString().toUpperCase().trim();
+
+                for(Categoria item : listafull)
+                {
+                    if(item.getDescripcion().toUpperCase().startsWith(filterPattern.toUpperCase()))
+                    {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            lista.clear();
+            lista.addAll((List)results.values);
+            notifyDataSetChanged();
+
+        }
+    };
 
     public interface Evento
     {

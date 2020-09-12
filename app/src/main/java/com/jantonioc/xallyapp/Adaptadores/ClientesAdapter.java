@@ -3,24 +3,31 @@ package com.jantonioc.xallyapp.Adaptadores;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jantonioc.ln.Cliente;
+import com.jantonioc.ln.Menu;
 import com.jantonioc.xallyapp.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class ClientesAdapter extends RecyclerView.Adapter<ClientesAdapter.holder> implements View.OnClickListener{
+public class ClientesAdapter extends RecyclerView.Adapter<ClientesAdapter.holder> implements View.OnClickListener, Filterable {
 
     private List<Cliente> lista;
+    private List<Cliente> listafull;
+
 
     private View.OnClickListener ClickListener;
 
     public ClientesAdapter(List<Cliente> lista) {
         this.lista = lista;
+        listafull=new ArrayList<>(lista);
     }
 
     @NonNull
@@ -57,6 +64,46 @@ public class ClientesAdapter extends RecyclerView.Adapter<ClientesAdapter.holder
             ClickListener.onClick(v);
         }
     }
+
+    @Override
+    public Filter getFilter() {
+        return listaclientefilter;
+    }
+
+    private Filter listaclientefilter= new Filter()
+    {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<Cliente> filteredList=new ArrayList<>();
+            if(constraint== null || constraint.length() == 0)
+            {
+                filteredList.addAll(listafull);
+            }else
+            {
+                String filterPattern = constraint.toString().toUpperCase().trim();
+
+                for(Cliente item : listafull)
+                {
+                    if(item.getNombre().toUpperCase().startsWith(filterPattern.toUpperCase()))
+                    {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            lista.clear();
+            lista.addAll((List)results.values);
+            notifyDataSetChanged();
+        }
+    };
 
     class holder extends RecyclerView.ViewHolder
     {
