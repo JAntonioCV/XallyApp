@@ -47,22 +47,22 @@ import java.util.List;
  */
 public class DetallesCuenta extends Fragment {
 
+    //interfaz
     private View rootView;
     private RecyclerView lista;
     private DetalleCuentasAdapter adapter;
 
     private ProgressBar progressBar;
 
+    //posicon
     Integer groupPosition;
 
+    //dialog
     private TextInputLayout txtcantidad;
-
     private TextView platillotxt;
     private TextView cantidadtxt;
 
     Button btnagregar;
-
-
 
 
     public DetallesCuenta() {
@@ -110,9 +110,7 @@ public class DetallesCuenta extends Fragment {
                     if (MainActivity.listadetalle.size() > 0) {
 
                         progressBar.setVisibility(View.GONE);
-
                         adapter = new DetalleCuentasAdapter(MainActivity.listadetalle);
-
                         adapter.setClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -175,6 +173,7 @@ public class DetallesCuenta extends Fragment {
                         detalleDeOrden.setPrecio(obj.getPrecio());
                         detalleDeOrden.setMenuid(obj.getMenuid());
 
+                        //si ya existe para el cliente actualizar la cantidad
                         if(yaExiste(detalleDeOrden))
                         {
                             Toast.makeText(rootView.getContext(), "Cantidad Actualizada", Toast.LENGTH_SHORT).show();
@@ -201,6 +200,7 @@ public class DetallesCuenta extends Fragment {
                         //Para que se cierre automaticamente al darla guardar
                         builder.cancel();
 
+                        //abrir la vista del cliente automaticamente cuando la lista este vacia
                         if(MainActivity.listadetalle.size()==0)
                         {
                             FragmentManager fm = getActivity().getSupportFragmentManager();

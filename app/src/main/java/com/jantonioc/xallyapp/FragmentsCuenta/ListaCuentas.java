@@ -27,11 +27,11 @@ import java.util.List;
  */
 public class ListaCuentas extends Fragment {
 
+    //interfaz
     private ExpandableListView expandableListView;
     private CuentasAdapter cuentasAdapter;
     private HashMap<String, List<DetalleDeOrden>> listaclientedetalle;
     private View rootView;
-
 
 
     public ListaCuentas() {
@@ -51,20 +51,25 @@ public class ListaCuentas extends Fragment {
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
+        //vista
         rootView = inflater.inflate(R.layout.fragment_lista_cuentas, container, false);
 
         expandableListView = rootView.findViewById(R.id.expandiblelist);
 
+        //obtiene los clientes
         this.listaclientedetalle = getclientes();
 
+        //pasamos la lita de clientes y la lista de detalles
         cuentasAdapter = new CuentasAdapter(getActivity(),MainActivity.listaClientes,listaclientedetalle);
 
+        //adaptamos
         expandableListView.setAdapter(cuentasAdapter);
 
         return rootView;
 
     }
 
+    //hashmap que trae a los clientes desde un hashmap
     private HashMap<String,List<DetalleDeOrden>> getclientes()
     {
         HashMap<String, List<DetalleDeOrden>> clienteDetalles = new HashMap<>();

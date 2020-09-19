@@ -17,6 +17,7 @@ import retrofit2.http.Part;
 
 public interface UploadAPI {
 
+    //Metodo que utliza retrofit para enviar una imagen al server
     @Headers("Cache-control: no-cache")
     @Multipart
     @POST("ComandaWS/addPhotoComanda")

@@ -48,6 +48,7 @@ import static com.jantonioc.xallyapp.Constans.URLBASE;
  */
 public class OrdenComanda extends Fragment {
 
+    //interfaz
     private View rootView;
     private RecyclerView lista;
     private ProgressBar progressBar;
@@ -186,14 +187,14 @@ public class OrdenComanda extends Fragment {
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
                         progressBar.setVisibility(View.GONE);
-                        Toast.makeText(rootView.getContext(), "No se poseen ordenes para el dia de hoy", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(rootView.getContext(), "El Cliente no tiene orden asociada", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
                         for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
                             fm.popBackStack();
                         }
 
-                        Fragment fragment = new Ordenes();
+                        Fragment fragment = new ClientesComanda();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
                         transaction.addToBackStack(null);

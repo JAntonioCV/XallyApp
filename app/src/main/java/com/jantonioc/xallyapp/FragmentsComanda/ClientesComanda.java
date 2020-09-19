@@ -166,6 +166,7 @@ public class ClientesComanda extends Fragment {
                             fm.popBackStack();
                         }
 
+                        //aqui tengo que ver donde lo mando aun
                         Fragment fragment = new ClientesComanda();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);

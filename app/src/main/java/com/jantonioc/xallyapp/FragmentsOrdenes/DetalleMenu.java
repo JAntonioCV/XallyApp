@@ -41,6 +41,7 @@ import static com.jantonioc.xallyapp.Constans.URLBASE;
  */
 public class DetalleMenu extends Fragment {
 
+    //interfaz
     private View rootView;
     private ListView lista;
     private TextView nombre, precio, tiempo;
@@ -130,11 +131,6 @@ public class DetalleMenu extends Fragment {
                         tiempo.setText("Tiempo estimado: " + menu.getTiempoestimado() + " minutos");
 
                         ArrayAdapter adapter = new ArrayAdapter<>(rootView.getContext(), android.R.layout.simple_list_item_1, ingredientes);
-
-                        //Hacerlo con un RecyclerView
-                        //List<String> ingredientes;
-                        //ingredientes = Arrays.asList(arreglostring);
-                        //DetalleAdapter adapter = new DetalleAdapter(ingredientes);
 
                         lista.setAdapter(adapter);
 

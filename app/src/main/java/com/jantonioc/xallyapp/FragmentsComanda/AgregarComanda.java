@@ -112,9 +112,10 @@ public class AgregarComanda extends Fragment {
     //archivo bitma para la imagen
     private Bitmap bitmap = null;
 
-    //
+    //para innabilitar o habilitar botones
     boolean nuevaimagen=false;
-
+    boolean imagen = false;
+    boolean ruta = true;
 
     public AgregarComanda() {
         // Required empty public constructor
@@ -135,6 +136,7 @@ public class AgregarComanda extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
+        //al seleccionar una de las opciones del toolbar
         switch(item.getItemId())
         {
             case R.id.add_comanda:
@@ -154,31 +156,34 @@ public class AgregarComanda extends Fragment {
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
 
-        MenuItem guardar = menu.findItem(R.id.save_phto);
+        //para habilitt o innabilitar los botones del toolbar
+            MenuItem guardar = menu.findItem(R.id.save_phto);
 
-        if(path.isEmpty())
-        {
-            guardar.setEnabled(false);
-            guardar.getIcon().setAlpha(130);
-        }
-        else
-        {
-            guardar.setEnabled(true);
-            guardar.getIcon().setAlpha(255);
-        }
+            if(!path.isEmpty() && ruta)
+            {
+                guardar.setEnabled(true);
+                guardar.getIcon().setAlpha(255);
+            }
+            else
+            {
+                guardar.setEnabled(false);
+                guardar.getIcon().setAlpha(130);
+            }
 
-        MenuItem tomar = menu.findItem(R.id.add_comanda);
+            MenuItem tomar = menu.findItem(R.id.add_comanda);
 
-        if(permisos)
-        {
-            tomar.setEnabled(true);
-            tomar.getIcon().setAlpha(255);
-        }
-        else
-        {
-            tomar.setEnabled(false);
-            tomar.getIcon().setAlpha(130);
-        }
+            if(permisos && imagen)
+            {
+                tomar.setEnabled(true);
+                tomar.getIcon().setAlpha(255);
+            }
+            else
+            {
+                tomar.setEnabled(false);
+                tomar.getIcon().setAlpha(130);
+            }
+
+
         super.onPrepareOptionsMenu(menu);
     }
 
@@ -193,16 +198,20 @@ public class AgregarComanda extends Fragment {
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
+        //vista
         rootView = inflater.inflate(R.layout.fragment_agregar_comanda, container, false);
 
+        //imagen
         imagencomanda = rootView.findViewById(R.id.imagencomanda);
 
         progressBar = rootView.findViewById(R.id.progressBar);
 
         progressBar.setVisibility(View.VISIBLE);
 
+        //consulta si tiene foto asociado a esa orden
         consultarFoto();
 
+        //consulta si tiene los permisos
         validarPermisos();
 
         return rootView;
@@ -228,18 +237,26 @@ public class AgregarComanda extends Fragment {
                         Picasso.with(getContext()).load(ruta).networkPolicy(NetworkPolicy.NO_CACHE).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerInside().into(imagencomanda, new com.squareup.picasso.Callback() {
                             @Override
                             public void onSuccess() {
-
+                                //si se procesa la descarga de la imagen
+                                imagen = true;
+                                requireActivity().invalidateOptionsMenu();
                                 progressBar.setVisibility(View.GONE);
                             }
 
                             @Override
                             public void onError() {
+                                //si falla
+                                imagen = true;
                                 progressBar.setVisibility(View.GONE);
+                                requireActivity().invalidateOptionsMenu();
                                 Toast.makeText(rootView.getContext(), "Error al obtener la imagen", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }else
                     {
+                        //Muestro la imagen aunque no cargue
+                        imagen = true;
+                        requireActivity().invalidateOptionsMenu();
                         progressBar.setVisibility(View.GONE);
                     }
 
@@ -280,28 +297,37 @@ public class AgregarComanda extends Fragment {
         requireActivity().invalidateOptionsMenu();
     }
 
+    //abrir la cama para tomar fotos
     private void tomarfoto() {
 
+        //nombre de la imagen, y al archivo le pasamos la ruta
         String nombreImagen = "";
         File fileImagen = new File(getContext().getExternalFilesDir(null), RUTA_IMAGEN);
         boolean isCreada = fileImagen.exists();
 
 
+        //si no esta creada
         if (isCreada == false) {
             isCreada = fileImagen.mkdirs();
         }
 
+        //si esta creada
         if (isCreada == true) {
+            //le ponemos el nombre del cliente y el id de la orden
             nombreImagen = MainActivity.comanda.getNombrecompleto() + MainActivity.comanda.getIdorden() + ".png";
         }
 
+        //sacamos el path
         path = getContext().getExternalFilesDir(null) + File.separator + RUTA_IMAGEN + File.separator + nombreImagen;
 
+        //creamos archivo con la direccion
         File imagen = new File(path);
 
+        // abrimos el inten de la camara para capturar la imagen
         Intent intent = null;
         intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
+        //el provehedor que nos permite obtener archivos de imagenes
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             String authorities = getContext().getPackageName() + ".provider";
             Uri imageUri = FileProvider.getUriForFile(getContext(), authorities, imagen);
@@ -310,6 +336,7 @@ public class AgregarComanda extends Fragment {
             intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imagen));
         }
 
+        //esperamos el resutl
         startActivityForResult(intent, REQUEST_FROM_CAMERA);
     }
 
@@ -317,6 +344,7 @@ public class AgregarComanda extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        //si el resultado es ok obtenemos la path de la imagen se escanea
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
 
@@ -329,6 +357,7 @@ public class AgregarComanda extends Fragment {
                                 }
                             });
 
+                    //convertimos a bitmar y lo pasamos a la imageview
                     bitmap = BitmapFactory.decodeFile(path);
                     imagencomanda.setImageBitmap(bitmap);
                     requireActivity().invalidateOptionsMenu();
@@ -340,6 +369,7 @@ public class AgregarComanda extends Fragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
+        //piediendo los permisos nesesarios
         switch (requestCode) {
             case REQUEST_CAMERA_AND_WRITE_EXTERNAL:
                 if (permissions.length == 2 && grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
@@ -354,11 +384,16 @@ public class AgregarComanda extends Fragment {
         }
     }
 
+    //metodo para subir la iamgen
     private void uploadImage()
     {
+        imagen = false;
+        ruta = false;
+        requireActivity().invalidateOptionsMenu();
+
         if(nuevaimagen)
         {
-            //Mostrar un dialog
+            //Mostrar un dialog si realmente quiere actualizar o no
             final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
             builder.setTitle("Actualizar foto");
@@ -374,6 +409,9 @@ public class AgregarComanda extends Fragment {
             builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    imagen = true;
+                    ruta = true;
+                    requireActivity().invalidateOptionsMenu();
                     return;
                 }
             });
@@ -387,34 +425,46 @@ public class AgregarComanda extends Fragment {
         }
     }
 
+    //enviar imagen
     private void enviarimg()
     {
         //ocultar la img
         imagencomanda.setVisibility(View.GONE);
 
+        //poner viisble el progress
         progressBar.setVisibility(View.VISIBLE);
 
+        //obtener un nuevo archivo con la direcion
         File file = new File(path);
 
+        //obtener la instancia de retrofit
         Retrofit retrofit = NetworkClient.getRetrofit();
 
+        //cabecera del tipo de dato
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"),file);
 
+        //la foto para que sea enviada como un formulario
         MultipartBody.Part photo = MultipartBody.Part.createFormData("photo",file.getName(),requestBody);
 
+        //el id de la orden
         RequestBody ordenid = RequestBody.create(MediaType.parse("text/plain"),String.valueOf(MainActivity.comanda.getIdorden()));
 
+        //Creacioin de la interfaz de retrofit para traer los servicios
         UploadAPI uploadAPI = retrofit.create(UploadAPI.class);
 
+        //pasamos la foto y el id
         uploadAPI.uploadImage(photo,ordenid).enqueue(new Callback<ResultadoWS>() {
             @Override
             public void onResponse(Call<ResultadoWS> call, retrofit2.Response<ResultadoWS> response) {
 
+                //si es completada sin error
                 if (response.isSuccessful()) {
 
+                    //llamamos el mensaje y el resultado
                     String msj = response.body().getMensaje();
                     boolean resultado = response.body().isResultado();
 
+                    //si es true
                     if (resultado) {
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
@@ -424,13 +474,14 @@ public class AgregarComanda extends Fragment {
                         transaction.replace(R.id.content, fragment);
                         transaction.commit();
                     } else {
+                        //si es falso
                         imagencomanda.setVisibility(View.VISIBLE);
                         Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
                     }
                 }
 
             }
-
+            //si falla
             @Override
             public void onFailure(Call<ResultadoWS> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
@@ -439,68 +490,6 @@ public class AgregarComanda extends Fragment {
 
             }
         });
-
-//        uploadAPI.uploadImage(photo).enqueue(new Callback<ResponseBody>() {
-//            @Override
-//            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
-//
-//                if (response.isSuccessful()) {
-//                    progressBar.setVisibility(View.GONE);
-//                    Toast.makeText(rootView.getContext(), "Almacenado con Exito", Toast.LENGTH_SHORT).show();
-//                    Fragment fragment = new ClientesComanda();
-//                    FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-//                    transaction.replace(R.id.content, fragment);
-//                    transaction.commit();
-//                } else
-//                {
-//                    Toast.makeText(rootView.getContext(),"ah ocurrido un error inesperado intente de nuevo", Toast.LENGTH_SHORT).show();
-//                    progressBar.setVisibility(View.GONE);
-//                    imagencomanda.setVisibility(View.VISIBLE);
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<ResponseBody> call, Throwable t) {
-//                progressBar.setVisibility(View.GONE);
-//                imagencomanda.setVisibility(View.VISIBLE);
-//                Toast.makeText(rootView.getContext(),t.getMessage(), Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
-//        Call<ResultadoWS> call = uploadAPI.uploadImage(photo);
-//
-//        call.enqueue(new Callback<ResultadoWS>() {
-//            @Override
-//            public void onResponse(Call<ResultadoWS> call, retrofit2.Response<ResultadoWS> response) {
-//
-//                if(response.isSuccessful())
-//                {
-//                    String msj = response.body().getMensaje();
-//                    boolean resultado = response.body().isResultado();
-//
-//                    if(resultado)
-//                    {
-//                        //progressBar.setVisibility(View.GONE);
-//                        Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
-//                        //Abrir el fragmento del detalle de los platillos
-//                        Fragment fragment = new ClientesComanda();
-//                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-//                        transaction.replace(R.id.content, fragment);
-//                        transaction.commit();
-//                    }
-//                    else
-//                    {
-//                        imagencomanda.setVisibility(View.VISIBLE);
-//                        Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
-//                    }
-//                }
-//            }
-//            @Override
-//            public void onFailure(Call<ResultadoWS> call, Throwable t) {
-//                imagencomanda.setVisibility(View.VISIBLE);
-//                Toast.makeText(rootView.getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
-//            }
-//        });
     }
 
 }

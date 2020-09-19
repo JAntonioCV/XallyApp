@@ -52,6 +52,7 @@ import static com.jantonioc.xallyapp.Constans.URLBASE;
  */
 public class Clientes extends Fragment {
 
+    //interfaz
     private View rootView;
     private RecyclerView lista;
     private List<Cliente> listaclientes;
@@ -141,6 +142,7 @@ public class Clientes extends Fragment {
             }
         });
 
+        //listar los clientes
         listaCliente();
 
         // Inflate the layout for this fragment

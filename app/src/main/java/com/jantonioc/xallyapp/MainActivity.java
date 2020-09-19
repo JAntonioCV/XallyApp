@@ -40,14 +40,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //Fragmento para ser acceddido desde cualquier lugar de la clase
     Fragment fragment = null;
 
-    //Instancia de la clase Orden, Detalle Orden
+    //lista para lod detallse de nueva orden y agregar orden
     public static List<DetalleDeOrden> listadetalle = new ArrayList<>();
+    //objeto para almacenar la orden
     public static Orden orden = new Orden();
+    //si es modificacion de pepdido
     public static boolean modpedidos;
+    //lista de clientes para la cuenta
     public static List<String> listaClientes;
+    //lista de lista para la cuenta
     public static List<List<DetalleDeOrden>> listadetalles;
+    //informacion de la comanda
     public static Comanda comanda = new Comanda();
 
+    //para que no se cierre al primer atras
     private static final int INTERVALO = 2000;
     private long tiempoPrimerClick;
 
@@ -98,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     //Pasar parametros entre fragment
                     Bundle bundle = new Bundle();
                     //mandar el objeto serializado
-                    bundle.putInt("idorden",orden.getId());
+                    bundle.putInt("idorden", orden.getId());
                     fragment.setArguments(bundle);
                     FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     transaction.replace(R.id.content, fragment);
@@ -131,19 +137,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        //sobre escribir boton atras
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if (getSupportFragmentManager().getBackStackEntryCount() > 0)
-            {
-               super.onBackPressed();
-            }
-            else
-            {
-                if (tiempoPrimerClick + INTERVALO > System.currentTimeMillis()){
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                super.onBackPressed();
+            } else {
+                if (tiempoPrimerClick + INTERVALO > System.currentTimeMillis()) {
                     super.onBackPressed();
                     return;
-                }else {
+                } else {
                     Toast.makeText(this, "Vuelve a presionar para salir", Toast.LENGTH_SHORT).show();
                 }
                 tiempoPrimerClick = System.currentTimeMillis();
@@ -185,26 +189,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         switch (item.getItemId()) {
             case R.id.nav_menu:
-                //limpiamos los auxiliares
+                //abrir nueva orden
                 fragment = new Ordenes();
+                //limpiamos los auxiliares
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
                 MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_comanda:
+                //abrir lista clientes para la comanda
                 fragment = new ClientesComanda();
+                //limpiamos los auxiliares
+                MainActivity.listadetalle.clear();
+                MainActivity.orden = new Orden();
+                MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_pedidos:
-                //limpiamos los auxiliares
+                //abrir los pedidos
                 fragment = new Pedidos();
+                //limpiamos los auxiliares
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
                 MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_dividir:
+                //abrimos dividir cuenta
                 fragment = new PedidosCuenta();
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
@@ -238,27 +250,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-    public static void crearClientes(int cantidad)
-    {
+    //metodo para crear clientes
+    public static void crearClientes(int cantidad) {
         listaClientes = new ArrayList<>();
 
-        for(int i=0; i < cantidad; i++)
-        {
-            String cliente="Cliente " + (i+1);
+        for (int i = 0; i < cantidad; i++) {
+            String cliente = "Cliente " + (i + 1);
             listaClientes.add(cliente);
         }
     }
 
-    public static void crearListas(int cantidad)
-    {
+    //metodo para crear listas
+    public static void crearListas(int cantidad) {
         listadetalles = new ArrayList<>();
-        for(int i=0; i < cantidad; i++)
-        {
+        for (int i = 0; i < cantidad; i++) {
             List<DetalleDeOrden> cliente = new ArrayList<>();
             listadetalles.add(cliente);
         }
     }
 
+    //metodo para limoiar las listas
     public static void limpiarListas()
     {
         for(int i=0; i < MainActivity.listadetalles.size(); i++)

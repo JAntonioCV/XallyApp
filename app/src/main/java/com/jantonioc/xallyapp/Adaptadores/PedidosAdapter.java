@@ -31,7 +31,7 @@ public class PedidosAdapter extends RecyclerView.Adapter<PedidosAdapter.holder> 
 
         view.setOnClickListener(this);
 
-        return new PedidosAdapter.holder(view);
+        return new holder(view);
     }
 
     @Override

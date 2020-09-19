@@ -46,6 +46,7 @@ import static com.jantonioc.xallyapp.Constans.URLBASE;
  */
 public class DetallesComanda extends Fragment {
 
+    //interfaz
     private View rootView;
     private RecyclerView lista;
     private DetalleOrdenAdapter adapter;
@@ -69,9 +70,11 @@ public class DetallesComanda extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        //toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
         toolbar.setTitle("Detalle Ordenes");
 
+        //fab boton
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
@@ -90,9 +93,9 @@ public class DetallesComanda extends Fragment {
 
         //Validar si la lista tiene datos envia si no, muestra un mensaje
         btnenviar = rootView.findViewById(R.id.btnenviar);
-
         btnenviar.setText("Comanda");
 
+        //abrir el agregar comanda
         btnenviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,9 +109,11 @@ public class DetallesComanda extends Fragment {
             }
         });
 
+        //obteniendo el id de la orden selecionada
         Bundle bundle = getArguments();
         int idorden = bundle.getInt("idOrden",0);
 
+        //obtenemos los detalles
         obtenerDetalles(idorden);
 
         return rootView;
@@ -172,7 +177,8 @@ public class DetallesComanda extends Fragment {
                             fm.popBackStack();
                         }
 
-                        Fragment fragment = new Pedidos();
+                        //acordarse de abrir la vista anterior
+                        Fragment fragment = new OrdenComanda();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
                         transaction.addToBackStack(null);

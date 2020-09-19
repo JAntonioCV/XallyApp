@@ -38,7 +38,13 @@
         android:id="@+id/cantidad"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:endIconMode="custom"
+        app:startIconDrawable="@drawable/ic_remove_circle"
+        app:endIconTint="@color/colorPrimary"
+        app:startIconTint="@color/colorPrimary"
+        app:endIconDrawable="@drawable/ic_add_circle"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:errorIconDrawable="@null"
         app:errorEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText

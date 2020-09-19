@@ -64,9 +64,7 @@ public class PedidosCuenta extends Fragment {
     private TextInputLayout txtcantidad;
     private TextInputEditText cantidadtxt;
     private Button calcular;
-    private Integer cantidadClientes=0;
-
-
+    private Integer cantidadClientes = 0;
 
 
     public PedidosCuenta() {
@@ -115,12 +113,11 @@ public class PedidosCuenta extends Fragment {
         return rootView;
     }
 
-    private void listaPedidos()
-    {
+    private void listaPedidos() {
         //limpiar los pedidos al consultar al WS
-        listaPedidos= new ArrayList<>();
+        listaPedidos = new ArrayList<>();
 
-        String uri = URLBASE+"OrdenesWS/Ordenes";
+        String uri = URLBASE + "OrdenesWS/Ordenes";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -224,12 +221,12 @@ public class PedidosCuenta extends Fragment {
 
     }
 
-    private void clientes(int idorden)
-    {
+    private void clientes(int idorden) {
+        //obtener los detalles de la orden y limpiar las listas
         //if(MainActivity.orden.getId() != idorden)
         //{
-            obtenerDetalles(idorden);
-            MainActivity.limpiarListas();
+        obtenerDetalles(idorden);
+        MainActivity.limpiarListas();
         //}
 
         //Abrir el fragmento del detalle de los platillos
@@ -242,33 +239,30 @@ public class PedidosCuenta extends Fragment {
     }
 
     //obtener la fecha en forato legible para el usuario
-    private static String ConvertirJsonFecha(String jsonfecha)
-    {
+    private static String ConvertirJsonFecha(String jsonfecha) {
 
-        jsonfecha=jsonfecha.replace("/Date(", "").replace(")/", "");
+        jsonfecha = jsonfecha.replace("/Date(", "").replace(")/", "");
         long tiempo = Long.parseLong(jsonfecha);
-        Date fecha= new Date(tiempo);
+        Date fecha = new Date(tiempo);
 
         return new SimpleDateFormat("dd/MM/yyyy").format(fecha);
     }
 
     //obtener el tiempo en formato legible para el usuario
-    private static String ConvertirJsonTiempo(String jsonfecha)
-    {
-        jsonfecha=jsonfecha.replace("/Date(", "").replace(")/", "");
+    private static String ConvertirJsonTiempo(String jsonfecha) {
+        jsonfecha = jsonfecha.replace("/Date(", "").replace(")/", "");
         long tiempo = Long.parseLong(jsonfecha);
-        Date fecha= new Date(tiempo);
+        Date fecha = new Date(tiempo);
 
         return new SimpleDateFormat("hh:mm a").format(fecha);
     }
 
 
-    private void obtenerDetalles(int idOrden)
-    {
+    private void obtenerDetalles(int idOrden) {
         //MainActivity.orden.setId(idOrden);
         MainActivity.listadetalle = new ArrayList<>();
 
-        String uri = URLBASE+"DetallesDeOrdenWS/DetalleDeOrdenCuenta/" + idOrden;
+        String uri = URLBASE + "DetallesDeOrdenWS/DetalleDeOrdenCuenta/" + idOrden;
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -318,47 +312,41 @@ public class PedidosCuenta extends Fragment {
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
     }
 
-    private void dialogoCantidad(final int id)
-    {
+    private void dialogoCantidad(final int id) {
         //Abrimos la modal agregar el nuevo detalle de orden
         final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
         View view = getLayoutInflater().inflate(R.layout.cantidad_persona, null);
-
         txtcantidad = view.findViewById(R.id.cantidad);
         cantidadtxt = view.findViewById(R.id.cantidadtxt);
         calcular = view.findViewById(R.id.btncalcular);
 
+        //calcula
         calcular.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if(!validarCantidad())
-                {
+                //si los campos son validos
+                if (!validarCantidad()) {
                     return;
-                }else
-                {
+                } else {
+                    //pasa la cantidad y crea la lista de clientes y lista de productos por cliente
                     cantidadClientes = Integer.valueOf(txtcantidad.getEditText().getText().toString().trim());
                     //Creando la lista de clientes y la lista de lista
                     MainActivity.crearClientes(cantidadClientes);
                     MainActivity.crearListas(cantidadClientes);
-
+                    //manda el id de la orden
                     clientes(id);
-
                     builder.cancel();
                 }
-
-
             }
         });
 
         builder.setView(view);
-        //builder.setCancelable(false);
-        //builder.setCanceledOnTouchOutside(false);
         builder.create();
         builder.show();
     }
 
+    //valida el campo Cantidad
     private boolean validarCantidad()
     {
         boolean isValidate = true;

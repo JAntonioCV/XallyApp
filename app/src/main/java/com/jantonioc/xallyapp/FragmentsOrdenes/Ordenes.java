@@ -81,7 +81,7 @@ public class Ordenes extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.reload_fragment, menu);
 
-        //Menu item para buscar
+        //Menu item para buscar el codigo
         MenuItem reload = menu.findItem(R.id.action_reload);
 
         reload.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
@@ -108,8 +108,10 @@ public class Ordenes extends Fragment {
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
+        //vista
         rootView = inflater.inflate(R.layout.fragment_orden, container, false);
 
+        //campos
         txtcodigo = rootView.findViewById(R.id.codigoorden);
         txtfecha = rootView.findViewById(R.id.fechaorden);
         txthora = rootView.findViewById(R.id.horaorden);
@@ -117,6 +119,7 @@ public class Ordenes extends Fragment {
         rbHuesped = rootView.findViewById(R.id.rbhuesped);
         rbvisitante = rootView.findViewById(R.id.rbvisitante);
 
+        //poner el visitante seleccionado por defecto
         rbvisitante.setChecked(true);
 
         //Obteniendo el ultimo codigo
@@ -129,12 +132,13 @@ public class Ordenes extends Fragment {
             public void onClick(View v) {
 
         //Al agregar orden abrir el fragmento categoria
-
                 if(txtcodigo.getEditText().getText().toString().isEmpty())
                 {
+                    //si el codigo es vacion mensaje de actualize el codigo
                     Toast.makeText(rootView.getContext(),"Sin codigo actualize, por favor",Toast.LENGTH_LONG).show();
                 }else
                 {
+                    //si el huesped es seleccionado
                     if(rbHuesped.isChecked())
                     {
                         Fragment fragment = new Clientes();
@@ -143,7 +147,9 @@ public class Ordenes extends Fragment {
                         transaction.addToBackStack(null);
                         transaction.commit();
 
-                    }else if(rbvisitante.isChecked())
+                    }
+                    //si es visitante el selecionado
+                    else if(rbvisitante.isChecked())
                     {
                         MainActivity.orden.setIdcliente(-1);
                         Fragment fragment = new Categorias();
@@ -154,6 +160,7 @@ public class Ordenes extends Fragment {
                     }
                     else
                     {
+                        //que seleecione uno
                         Toast.makeText(rootView.getContext(),"Seleccione el tipo de cliente",Toast.LENGTH_LONG).show();
                     }
 
@@ -166,6 +173,7 @@ public class Ordenes extends Fragment {
 
     }
 
+    //obtiene el codigo
     private void obtenerCodigo() {
         String uri = URLBASE+"OrdenesWS/UltimoCodigo";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
@@ -193,23 +201,22 @@ public class Ordenes extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                //mostrar ciertos errores
                 if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                    Toast.makeText(rootView.getContext(), "Communication Error!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(rootView.getContext(), "Error de comunicacion", Toast.LENGTH_SHORT).show();
                 } else if (error instanceof AuthFailureError) {
-                    Toast.makeText(rootView.getContext(), "Authentication Error!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(rootView.getContext(), "Error de Autentificación", Toast.LENGTH_SHORT).show();
                 } else if (error instanceof ServerError) {
-                    Toast.makeText(rootView.getContext(), "Server Side Error!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(rootView.getContext(), "Error del Servidor", Toast.LENGTH_SHORT).show();
                 } else if (error instanceof NetworkError) {
-                    Toast.makeText(rootView.getContext(), "Network Error!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(rootView.getContext(), "Error de conexion de red o wifi", Toast.LENGTH_SHORT).show();
                 } else if (error instanceof ParseError) {
-                    Toast.makeText(rootView.getContext(), "Parse Error!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(rootView.getContext(), "Error de analisis", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-
-        //politica de reintentos
+        //politica de reintentos para obtener el codigo
         request.setRetryPolicy(new DefaultRetryPolicy(5000,DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
     }

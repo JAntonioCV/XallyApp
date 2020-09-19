@@ -179,6 +179,8 @@ public class Pedidos extends Fragment {
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
+
+                        //aun tengo que poner uno por defecto de bienvenida
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(rootView.getContext(), "No se poseen ordenes para el dia de hoy", Toast.LENGTH_SHORT).show();
 
@@ -216,7 +218,6 @@ public class Pedidos extends Fragment {
 
 
     }
-
 
     private void detalleOrden(int idorden)
     {

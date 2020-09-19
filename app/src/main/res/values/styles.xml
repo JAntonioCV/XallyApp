@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -17,6 +17,7 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <!--Toolbar Style-->
     <style name="AppTheme.Toolbar" parent="AppTheme">
         <!--This line changes the color of text in Toolbar-->
         <item name="android:textColorPrimary">@android:color/white</item>
@@ -27,14 +28,17 @@
 
     </style>
 
+    <!--estilo para el buscador-->
     <style name="cursorColor" parent="Widget.AppCompat.AutoCompleteTextView">
         <item name="android:textCursorDrawable">@drawable/cursor</item>
     </style>
 
+    <!--estilo para el boton-->
     <style name="MyButton" parent="Theme.AppCompat.Light">
         <item name="colorButtonNormal">@color/colorPrimary</item>
     </style>
 
+    <!--Splash Screen-->
     <style name="SplashTheme" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@drawable/splashscreen</item>
     </style>

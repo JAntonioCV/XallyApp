@@ -103,10 +103,11 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
 
         private String obtenerNota(String nota)
         {
-            if(nota.isEmpty())
+            if(nota.isEmpty() || nota.equals("null"))
             {
                 return "Sin nota";
             }
+
             return nota.equals("Sin nota") ? "Sin nota" : nota;
         }
 
