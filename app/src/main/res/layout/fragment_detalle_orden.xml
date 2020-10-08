@@ -1,52 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".FragmentsOrdenes.DetalleOrden">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.jantonioc.xalliapp.FragmentsOrdenes.DetalleOrden">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewDetalleOrden"
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        style="?android:attr/progressBarStyle">
+    </ProgressBar>
+
+    <LinearLayout
+        android:id="@+id/linearlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"/>
+        android:orientation="vertical">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="4dp"
-        android:background="@android:color/white">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewDetalleOrden"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
-        <TextView
-            android:id="@+id/total"
+        </androidx.recyclerview.widget.RecyclerView>
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textotal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="start"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textStyle="bold"
-            android:text="Total:" />
-
-        <Button
-            android:id="@+id/btnenviar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
             android:layout_marginBottom="4dp"
-            android:layout_below="@+id/textotal"
-            android:textColor="@color/white"
-            android:background="@drawable/bordes_redondos"
-            android:text="Enviar" />
+            android:background="@android:color/white">
 
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/total"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textStyle="bold" />
 
-</LinearLayout>
+            <TextView
+                android:id="@+id/textotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textStyle="bold"
+                android:text="Total:" />
+
+            <Button
+                android:id="@+id/btnenviar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:layout_centerInParent="true"
+                android:layout_below="@+id/textotal"
+                android:textColor="@color/white"
+                android:paddingBottom="10dp"
+                android:paddingTop="10dp"
+                app:cornerRadius="5dp"
+                android:text="Enviar" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

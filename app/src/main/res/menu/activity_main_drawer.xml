@@ -24,6 +24,12 @@
                     android:id="@+id/nav_dividir"
                     android:icon="@drawable/ic_divide_count"
                     android:title="Dividir Cuenta" />
+
+                <item
+                    android:id="@+id/nav_salir"
+                    android:icon="@drawable/ic_close"
+                    android:title="Cerrar Sesion" />
+
             </group>
         </menu>
     </item>

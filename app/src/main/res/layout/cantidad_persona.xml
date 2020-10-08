@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Cantidad de personas"
+        android:text="Dividir Cuenta"
         android:layout_marginBottom="4dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
@@ -27,18 +27,39 @@
             android:id="@+id/cantidadtxt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Cantidad"
+            android:hint="# Personas"
             android:inputType="number" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rbiguales"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Partes iguales" />
+
+        <RadioButton
+            android:id="@+id/rbindividuales"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Individual" />
+    </RadioGroup>
+
     <Button
         android:id="@+id/btncalcular"
-        android:layout_marginTop="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/white"
-        android:background="@drawable/bordes_redondos"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        app:cornerRadius="5dp"
         android:text="Calcular" />
 
 </LinearLayout>

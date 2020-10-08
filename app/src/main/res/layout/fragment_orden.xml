@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="15dp"
     android:orientation="vertical">
 
@@ -53,7 +54,6 @@
     <RadioGroup
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="4dp"
         android:orientation="horizontal">
 
         <RadioButton
@@ -72,11 +72,14 @@
     </RadioGroup>
 
     <Button
-            android:id="@+id/btnagregarpedido"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:background="@drawable/bordes_redondos"
-            android:text="Agregar Orden" />
+        android:id="@+id/btnagregarpedido"
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        app:cornerRadius="5dp"
+        android:text="Agregar Orden"
+        android:textColor="@color/white"/>
 
 </LinearLayout>
