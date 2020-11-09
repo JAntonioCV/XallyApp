@@ -18,10 +18,17 @@ public interface UploadAPI {
     //Metodo que utliza retrofit para enviar una imagen al server
     @Multipart
     @POST("ComandaWS/addPhotoComanda")
-    Call<ResultadoWS> uploadImage(
+    Call<ResultadoWS> uploadComanda(
 
             @Part MultipartBody.Part photo,
             @Part("idorden") RequestBody idorden
+    );
+
+    //Metodo que utliza retrofit para enviar una imagen al server
+    @Multipart
+    @POST("CarnetWS/addPhotoCarnet")
+    Call<ResultadoWS> uploadCarnet(
+            @Part MultipartBody.Part photo
     );
 
     //iniciar sesion

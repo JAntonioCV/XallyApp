@@ -1,2 +1,2 @@
-include ':app', ':ln'
+include ':app', ':models'
 rootProject.name='XalliApp'

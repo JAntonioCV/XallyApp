@@ -171,21 +171,14 @@ public class DetalleMenu extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
             }
         })
         {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-
-                //authorizacion basica con las credenciales del usuario en la db del sistema
-                String [] cred  = Constans.obtenerDatos(rootView.getContext());
-                HashMap<String, String> params = new HashMap<String, String>();
-                String creds = String.format("%s:%s",cred[0],cred[1]);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
-                params.put("Authorization", auth);
-                return params;
+                return Constans.getToken();
             }
         };
 

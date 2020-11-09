@@ -1,4 +1,4 @@
-package com.jantonioc.xalliapp.FragmentsComanda;
+package com.jantonioc.xalliapp.FragmentsCarnet;
 
 
 import android.Manifest;
@@ -40,6 +40,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jantonioc.ln.ResultadoWS;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.FragmentsComanda.ClientesComanda;
 import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.R;
 import com.jantonioc.xalliapp.Retrofit.NetworkClient;
@@ -68,7 +69,7 @@ import static com.jantonioc.xalliapp.Constans.URLBASE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AgregarComanda extends Fragment {
+public class AgregarCarnet extends Fragment {
 
     private View rootView;
     private ImageView imagencomanda;
@@ -80,7 +81,7 @@ public class AgregarComanda extends Fragment {
 
     //Carpetas para las comandas
     private final String CARPETA_RAIZ = "XalliAPP/";
-    private final String CARPETA_IMAGENES = "Comandas";
+    private final String CARPETA_IMAGENES = "Carnet";
     private final String RUTA_IMAGEN = CARPETA_RAIZ + CARPETA_IMAGENES;
 
     //ruta del archivo
@@ -95,7 +96,8 @@ public class AgregarComanda extends Fragment {
     boolean imagen = false;
     boolean ruta = true;
 
-    public AgregarComanda() {
+
+    public AgregarCarnet() {
         // Required empty public constructor
     }
 
@@ -125,52 +127,52 @@ public class AgregarComanda extends Fragment {
                 uploadImage();
                 return  true;
 
-                default:
-                   return super.onOptionsItemSelected(item);
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
-
 
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
 
         //para habilitt o innabilitar los botones del toolbar
-            MenuItem guardar = menu.findItem(R.id.save_phto);
+        MenuItem guardar = menu.findItem(R.id.save_phto);
 
-            if(!path.isEmpty() && ruta)
-            {
-                guardar.setEnabled(true);
-                guardar.getIcon().setAlpha(255);
-            }
-            else
-            {
-                guardar.setEnabled(false);
-                guardar.getIcon().setAlpha(130);
-            }
+        if(!path.isEmpty() && ruta)
+        {
+            guardar.setEnabled(true);
+            guardar.getIcon().setAlpha(255);
+        }
+        else
+        {
+            guardar.setEnabled(false);
+            guardar.getIcon().setAlpha(130);
+        }
 
-            MenuItem tomar = menu.findItem(R.id.add_comanda);
+        MenuItem tomar = menu.findItem(R.id.add_comanda);
 
-            if(permisos && imagen)
-            {
-                tomar.setEnabled(true);
-                tomar.getIcon().setAlpha(255);
-            }
-            else
-            {
-                tomar.setEnabled(false);
-                tomar.getIcon().setAlpha(130);
-            }
+        if(permisos && imagen)
+        {
+            tomar.setEnabled(true);
+            tomar.getIcon().setAlpha(255);
+        }
+        else
+        {
+            tomar.setEnabled(false);
+            tomar.getIcon().setAlpha(130);
+        }
 
 
         super.onPrepareOptionsMenu(menu);
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         //Cambiando el toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Guardar Comanda");
+        toolbar.setTitle("Guardar Carnet");
 
         //ocualtando el fab
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
@@ -197,7 +199,7 @@ public class AgregarComanda extends Fragment {
 
     private void consultarFoto() {
 
-        String uri = URLBASE+"ComandaWS/consultarFoto/"+MainActivity.comanda.getIdorden();
+        String uri = URLBASE+"CarnetWS/consultarFoto/"+ MainActivity.orden.getId();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -250,7 +252,7 @@ public class AgregarComanda extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
 
             }
         })
@@ -299,7 +301,7 @@ public class AgregarComanda extends Fragment {
         //si esta creada
         if (isCreada == true) {
             //le ponemos el nombre del cliente y el id de la orden
-            nombreImagen = MainActivity.comanda.getNombrecompleto() + MainActivity.comanda.getIdorden() + ".png";
+            nombreImagen = MainActivity.orden.getId() + ".png";
         }
 
         //sacamos el path
@@ -415,30 +417,21 @@ public class AgregarComanda extends Fragment {
     {
         //ocultar la img
         imagencomanda.setVisibility(View.GONE);
-
         //poner viisble el progress
         progressBar.setVisibility(View.VISIBLE);
-
         //obtener un nuevo archivo con la direcion
         File file = new File(path);
 
         //obtener la instancia de retrofit
         Retrofit retrofit = NetworkClient.getRetrofit(getActivity().getApplicationContext());
-
         //cabecera del tipo de dato
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"),file);
-
         //la foto para que sea enviada como un formulario
         MultipartBody.Part photo = MultipartBody.Part.createFormData("photo",file.getName(),requestBody);
-
-        //el id de la orden
-        RequestBody ordenid = RequestBody.create(MediaType.parse("text/plain"),String.valueOf(MainActivity.comanda.getIdorden()));
-
         //Creacioin de la interfaz de retrofit para traer los servicios
         UploadAPI uploadAPI = retrofit.create(UploadAPI.class);
-
         //pasamos la foto y el id
-        uploadAPI.uploadComanda(photo,ordenid).enqueue(new Callback<ResultadoWS>() {
+        uploadAPI.uploadCarnet(photo).enqueue(new Callback<ResultadoWS>() {
             @Override
             public void onResponse(Call<ResultadoWS> call, retrofit2.Response<ResultadoWS> response) {
 
@@ -454,7 +447,7 @@ public class AgregarComanda extends Fragment {
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
                         //Abrir el fragmento del detalle de los platillos
-                        Fragment fragment = new ClientesComanda();
+                        Fragment fragment = new OrdenCarnet();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
                         transaction.commit();

@@ -28,9 +28,15 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.jantonioc.ln.Cliente;
+import com.jantonioc.ln.Menu;
+import com.jantonioc.ln.Orden;
+import com.jantonioc.xalliapp.Adaptadores.MenuAdapter;
 import com.jantonioc.xalliapp.Constans;
 import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.VolleySingleton;
@@ -59,7 +65,6 @@ public class Clientes extends Fragment {
     private ClientesAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private SearchView searchView;
-
 
     public Clientes() {
         // Required empty public constructor
@@ -113,7 +118,7 @@ public class Clientes extends Fragment {
 
         //toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Clientes");
+        toolbar.setTitle("Huespedes");
 
         //ocultando el fab
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
@@ -190,13 +195,8 @@ public class Clientes extends Fragment {
                         adapter.setClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                //abrir el fragment de las categorias
-                                MainActivity.orden.setIdcliente(listaclientes.get(lista.getChildAdapterPosition(v)).getId());
-                                Fragment fragment = new Categorias();
-                                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                                transaction.replace(R.id.content, fragment);
-                                transaction.addToBackStack(null);
-                                transaction.commit();
+                                //consultamos si el cliente tiene ordenes
+                                clienteConOrden(listaclientes.get(lista.getChildAdapterPosition(v)).getId());
                             }
                         });
 
@@ -232,7 +232,7 @@ public class Clientes extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
         })
@@ -240,20 +240,62 @@ public class Clientes extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-
-                //authorizacion basica con las credenciales del usuario en la db del sistema
-                String [] cred  = Constans.obtenerDatos(rootView.getContext());
-                HashMap<String, String> params = new HashMap<String, String>();
-                String creds = String.format("%s:%s",cred[0],cred[1]);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
-                params.put("Authorization", auth);
-                return params;
+                return Constans.getToken();
             }
         };
 
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
-
-
     }
+
+    public void clienteConOrden(final int id)
+    {
+        String uri = Constans.URLBASE+"ClientesWS/ClienteConOrdenes/" + id;
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, uri,null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+
+                    //respuesta de parte del servidor
+                    String mensaje = response.getString("Mensaje");
+                    Boolean resultado = response.getBoolean("Resultado");
+
+                    if(resultado)
+                    {
+                        Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
+                    }
+                    else
+                    {
+                        //abrir el fragment de las categorias
+                        MainActivity.orden.setIdcliente(id);
+                        Fragment fragment = new Categorias();
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.content, fragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+
+                } catch (JSONException ex) {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+            }
+        }){
+            //metodo para la autenficacion basica en el servidor
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return Constans.getToken();
+            }
+        };
+
+        VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
+    }
+
 
 }

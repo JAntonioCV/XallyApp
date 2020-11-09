@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.RespuestaLogin;
+import com.jantonioc.xalliapp.Retrofit.ErrorHandlingAdapter;
 import com.jantonioc.xalliapp.Retrofit.NetworkClient;
 import com.jantonioc.xalliapp.Retrofit.UploadAPI;
 
@@ -69,7 +70,6 @@ public class LoginActivity extends AppCompatActivity {
             //mandamos el contexto para que se puedan obbtener la autenticacion del cliente
             Retrofit retrofit = NetworkClient.getRetrofit(getApplicationContext());
             UploadAPI uploadAPI = retrofit.create(UploadAPI.class);
-
             //utiliza el servicio login para iniciar sesion
             uploadAPI.Login(userName,password).enqueue(new Callback<RespuestaLogin>() {
                 @Override
@@ -86,6 +86,8 @@ public class LoginActivity extends AppCompatActivity {
                                 //si da error al guardar
                                 Toast.makeText(getApplicationContext(),"Error al almacenar las credenciales",Toast.LENGTH_SHORT);
                             }
+
+                            Constans.setToken(getApplicationContext());
 
                             //obtener login
                             RespuestaLogin servicio = response.body();
@@ -180,6 +182,8 @@ public class LoginActivity extends AppCompatActivity {
                             //si da error al guardar
                             Toast.makeText(getApplicationContext(),"Error al almacenar las credenciales",Toast.LENGTH_SHORT);
                         }
+
+                        Constans.setToken(getApplicationContext());
 
                         //obtener login
                         RespuestaLogin servicio = response.body();

@@ -1,10 +1,12 @@
 package com.jantonioc.xalliapp.Adaptadores;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -67,6 +69,7 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
 
         private void setDetalleOrden(final DetalleDeOrden detalleOrden) {
 
+            View statusIndicator = itemView.findViewById(R.id.indicator_appointment_status);
             TextView nombrePlatillo = itemView.findViewById(R.id.itemplatillo);
             TextView nota = itemView.findViewById(R.id.itemnota);
             TextView cantidad = itemView.findViewById(R.id.itemcantidad);
@@ -74,6 +77,7 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
             TextView pretotal = itemView.findViewById(R.id.itempretotal);
             TextView estado = itemView.findViewById(R.id.itemestado);
 
+            statusIndicator.setBackgroundColor(estadoindicator(detalleOrden.getEstado(),detalleOrden.getFromservice()));
 
             nombrePlatillo.setText(detalleOrden.getNombreplatillo());
 
@@ -122,6 +126,21 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
 
             return "Atendido";
         }
+
+        private int estadoindicator(boolean estado, boolean fromservice)
+        {
+            if(estado == false && fromservice == false)
+            {
+                return Color.YELLOW;
+            }
+            else if(estado == false && fromservice == true )
+            {
+                return Color.GREEN;
+            }
+
+            return Color.GRAY;
+        }
+
 
     }
 

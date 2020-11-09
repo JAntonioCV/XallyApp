@@ -112,7 +112,7 @@ public class PedidosAdapter extends RecyclerView.Adapter<PedidosAdapter.holder> 
                     break;
 
                     default:
-                        estados = "sin estado";
+                        estados = "Sin estado";
                         break;
 
             }

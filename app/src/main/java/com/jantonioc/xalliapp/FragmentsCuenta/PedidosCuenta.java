@@ -81,7 +81,7 @@ public class PedidosCuenta extends Fragment {
 
         //cambiar el nombre del toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Pedidos");
+        toolbar.setTitle("Dividir Cuenta");
 
         //ocultar el floating boton
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
@@ -186,6 +186,7 @@ public class PedidosCuenta extends Fragment {
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
+
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(rootView.getContext(), "No se poseen ordenes para el dia de hoy", Toast.LENGTH_SHORT).show();
 
@@ -196,8 +197,7 @@ public class PedidosCuenta extends Fragment {
 
                         Fragment fragment = new Ordenes();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.content, fragment);
-                        transaction.addToBackStack(null);
+                        transaction.add(R.id.content, fragment);
                         transaction.commit();
                     }
 
@@ -213,7 +213,7 @@ public class PedidosCuenta extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
         })
@@ -221,14 +221,7 @@ public class PedidosCuenta extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-
-                //authorizacion basica con las credenciales del usuario en la db del sistema
-                String [] cred  = Constans.obtenerDatos(rootView.getContext());
-                HashMap<String, String> params = new HashMap<String, String>();
-                String creds = String.format("%s:%s",cred[0],cred[1]);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
-                params.put("Authorization", auth);
-                return params;
+                return Constans.getToken();
             }
         };
 
@@ -334,7 +327,7 @@ public class PedidosCuenta extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
         })
@@ -342,14 +335,7 @@ public class PedidosCuenta extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-
-                //authorizacion basica con las credenciales del usuario en la db del sistema
-                String [] cred  = Constans.obtenerDatos(rootView.getContext());
-                HashMap<String, String> params = new HashMap<String, String>();
-                String creds = String.format("%s:%s",cred[0],cred[1]);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
-                params.put("Authorization", auth);
-                return params;
+                return Constans.getToken();
             }
         };
 

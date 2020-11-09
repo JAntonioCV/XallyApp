@@ -11,6 +11,15 @@
     app:cardUseCompatPadding="true"
     tools:ignore="Overdraw">
 
+    <!-- Indicador de estado -->
+    <View
+        android:id="@+id/indicator_appointment_status"
+        android:layout_width="8dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="#E0E0E0" />
+
     <LinearLayout
         android:id="@+id/flag"
         android:layout_width="match_parent"

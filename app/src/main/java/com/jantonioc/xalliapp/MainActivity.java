@@ -21,12 +21,16 @@ import com.google.android.material.navigation.NavigationView;
 import com.jantonioc.ln.Comanda;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Orden;
+import com.jantonioc.xalliapp.FragmentsCarnet.OrdenCarnet;
+import com.jantonioc.xalliapp.FragmentsFinalizar.OrdenFinalizar;
 import com.jantonioc.xalliapp.FragmentsOrdenes.DetalleOrden;
 import com.jantonioc.xalliapp.FragmentsOrdenes.Ordenes;
 import com.jantonioc.xalliapp.FragmentsComanda.ClientesComanda;
 import com.jantonioc.xalliapp.FragmentsCuenta.PedidosCuenta;
 import com.jantonioc.xalliapp.FragmentsPedidos.DetallesDeOrden;
 import com.jantonioc.xalliapp.FragmentsPedidos.Pedidos;
+import com.jantonioc.xalliapp.Reportes.ReporteBarChart;
+import com.jantonioc.xalliapp.Reportes.ReportePieChart;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -222,6 +226,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_dividir:
                 //abrimos dividir cuenta
                 fragment = new PedidosCuenta();
+                MainActivity.listadetalle.clear();
+                MainActivity.orden = new Orden();
+                MainActivity.modpedidos = false;
+                break;
+
+            case R.id.nav_finalizar:
+                fragment = new OrdenFinalizar();
+                MainActivity.listadetalle.clear();
+                MainActivity.orden = new Orden();
+                MainActivity.modpedidos = false;
+                break;
+
+            case R.id.nav_cdiplomatico:
+                fragment = new OrdenCarnet();
+                MainActivity.listadetalle.clear();
+                MainActivity.orden = new Orden();
+                MainActivity.modpedidos = false;
+                break;
+
+            case R.id.nav_repor1:
+                fragment = new ReporteBarChart();
+                MainActivity.listadetalle.clear();
+                MainActivity.orden = new Orden();
+                MainActivity.modpedidos = false;
+                break;
+
+            case R.id.nav_repor2:
+                fragment = new ReportePieChart();
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
                 MainActivity.modpedidos = false;

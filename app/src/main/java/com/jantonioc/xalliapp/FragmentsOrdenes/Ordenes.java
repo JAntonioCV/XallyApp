@@ -205,32 +205,14 @@ public class Ordenes extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                //mostrar ciertos errores
-                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                    Toast.makeText(rootView.getContext(), "Error de comunicacion", Toast.LENGTH_SHORT).show();
-                } else if (error instanceof AuthFailureError) {
-                    Toast.makeText(rootView.getContext(), "Error de Autentificación", Toast.LENGTH_SHORT).show();
-                } else if (error instanceof ServerError) {
-                    Toast.makeText(rootView.getContext(), "Error del Servidor", Toast.LENGTH_SHORT).show();
-                } else if (error instanceof NetworkError) {
-                    Toast.makeText(rootView.getContext(), "Error de conexion de red o wifi", Toast.LENGTH_SHORT).show();
-                } else if (error instanceof ParseError) {
-                    Toast.makeText(rootView.getContext(), "Error de analisis", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
             }
         })
         {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-
-                //authorizacion basica con las credenciales del usuario en la db del sistema
-                String [] cred  = Constans.obtenerDatos(rootView.getContext());
-                HashMap<String, String> params = new HashMap<String, String>();
-                String creds = String.format("%s:%s",cred[0],cred[1]);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
-                params.put("Authorization", auth);
-                return params;
+                return Constans.getToken();
             }
         };
 

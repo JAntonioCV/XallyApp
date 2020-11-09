@@ -50,8 +50,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -90,6 +93,11 @@ public class DetallesDeOrden extends Fragment {
 
     private TextView txtplatillo;
     private TextView txtexistencia;
+
+
+    //enviar la hora de la modificacion
+    private Date date = new Date();
+    private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
 
 
@@ -277,7 +285,7 @@ public class DetallesDeOrden extends Fragment {
 
                     //Guardando datos del detalle de orden
                     detallesordenes.put("cantidadorden", detalleActual.getCantidad());
-                    detallesordenes.put("notaorden", detalleActual.getNota().isEmpty() ? "Sin nota" : detalleActual.getNota());
+                    detallesordenes.put("notaorden", detalleActual.getNota().isEmpty() ? "" : detalleActual.getNota());
                     detallesordenes.put("nombreplatillo", detalleActual.getNombreplatillo());
                     detallesordenes.put("preciounitario", detalleActual.getPrecio());
                     detallesordenes.put("estado", detalleActual.getEstado());
@@ -299,6 +307,7 @@ public class DetallesDeOrden extends Fragment {
 
         try {
             //les asginamos un nombre para que los pueda reconocer la api
+            nuevosDetallesObject.put("fechaOrden",dateFormat.format(date));
             nuevosDetallesObject.put("nuevoDetallesWS", detallesordenesArray);
 
         } catch (JSONException e) {
@@ -332,11 +341,13 @@ public class DetallesDeOrden extends Fragment {
                         transaction.commit();
 
                     } else {
+                        progressBar.setVisibility(View.GONE);
                         linearLayout.setVisibility(View.VISIBLE);
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
                     }
 
                 } catch (JSONException ex) {
+                    progressBar.setVisibility(View.GONE);
                     linearLayout.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -346,6 +357,7 @@ public class DetallesDeOrden extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                progressBar.setVisibility(View.GONE);
                 linearLayout.setVisibility(View.VISIBLE);
                 Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
             }
@@ -354,14 +366,7 @@ public class DetallesDeOrden extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-
-                //authorizacion basica con las credenciales del usuario en la db del sistema
-                String [] cred  = Constans.obtenerDatos(rootView.getContext());
-                HashMap<String, String> params = new HashMap<String, String>();
-                String creds = String.format("%s:%s",cred[0],cred[1]);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
-                params.put("Authorization", auth);
-                return params;
+                return Constans.getToken();
             }
         };
 
@@ -480,21 +485,14 @@ public class DetallesDeOrden extends Fragment {
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
                 linearLayout.setVisibility(View.VISIBLE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
         })
         {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-
-                //authorizacion basica con las credenciales del usuario en la db del sistema
-                String [] cred  = Constans.obtenerDatos(rootView.getContext());
-                HashMap<String, String> params = new HashMap<String, String>();
-                String creds = String.format("%s:%s",cred[0],cred[1]);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
-                params.put("Authorization", auth);
-                return params;
+                return Constans.getToken();
             }
         };
 
@@ -539,14 +537,7 @@ public class DetallesDeOrden extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-
-                //authorizacion basica con las credenciales del usuario en la db del sistema
-                String [] cred  = Constans.obtenerDatos(rootView.getContext());
-                HashMap<String, String> params = new HashMap<String, String>();
-                String creds = String.format("%s:%s",cred[0],cred[1]);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
-                params.put("Authorization", auth);
-                return params;
+                return Constans.getToken();
             }
         };
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
@@ -558,7 +549,7 @@ public class DetallesDeOrden extends Fragment {
         for (final DetalleDeOrden detalleActual : listadetalle) {
 
             //si el selecionado se encuentra en la lista entra y botiene los datos
-            if (detalleDeOrden.getMenuid() == detalleActual.getMenuid()) {
+            if (detalleDeOrden.getMenuid() == detalleActual.getMenuid() && detalleActual.getFromservice()==false) {
 
                 //si la cantidad es 0 quiere decir que no hay existencia
                 if (cantidad == 0) {

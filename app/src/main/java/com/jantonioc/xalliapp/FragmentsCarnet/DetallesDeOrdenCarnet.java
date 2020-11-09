@@ -1,15 +1,7 @@
-package com.jantonioc.xalliapp.FragmentsCuenta;
+package com.jantonioc.xalliapp.FragmentsCarnet;
 
 
 import android.os.Bundle;
-import android.util.Base64;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -18,6 +10,15 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -25,44 +26,53 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jantonioc.ln.DetalleDeOrden;
-import com.jantonioc.xalliapp.Constans;
-import com.jantonioc.xalliapp.VolleySingleton;
 import com.jantonioc.xalliapp.Adaptadores.DetalleOrdenAdapter;
-import com.jantonioc.xalliapp.FragmentsComanda.OrdenComanda;
+import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.FragmentsComanda.AgregarComanda;
+import com.jantonioc.xalliapp.FragmentsFinalizar.OrdenFinalizar;
 import com.jantonioc.xalliapp.R;
+import com.jantonioc.xalliapp.VolleySingleton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DetallesOrdenIguales extends Fragment {
+public class DetallesDeOrdenCarnet extends Fragment {
 
-    //interfaz
+    //Variables del fragment
     private View rootView;
     private RecyclerView lista;
     private DetalleOrdenAdapter adapter;
-
     private List<DetalleDeOrden> listadetalle;
-
     private ProgressBar progressBar;
+    private LinearLayout linearLayout;
 
-    private Button btnenviar;
+
+    //boton y texto enviar
+    private Button btncerrar;
     private TextView total;
 
+    //variables nesesarias
     private int idorden;
-    private int cantidad;
 
 
-    public DetallesOrdenIguales() {
+    //enviar la hora de la modificacion
+    private Date date = new Date();
+    private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
+
+    public DetallesDeOrdenCarnet() {
         // Required empty public constructor
     }
 
@@ -70,44 +80,42 @@ public class DetallesOrdenIguales extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         //toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Detalle Ordenes");
+        toolbar.setTitle("Detalles de Orden");
 
-        //fab boton
+        //fab botton
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
-        // Inflate the layout for this fragment
+        //vista
         rootView = inflater.inflate(R.layout.fragment_detalles_de_orden, container, false);
 
+        //la lista
         lista = rootView.findViewById(R.id.recyclerViewDetalleOrden);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
+
+        //linear layout
+        linearLayout = rootView.findViewById(R.id.linearlayout);
+        linearLayout.setVisibility(View.GONE);
 
         //progressbar
         progressBar = rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
+        //tex total y enviar modificaciones
         total = rootView.findViewById(R.id.total);
+        btncerrar = rootView.findViewById(R.id.btnenviar);
+        btncerrar.setText("Guardar Carnet");
 
-        //Validar si la lista tiene datos envia si no, muestra un mensaje
-        btnenviar = rootView.findViewById(R.id.btnenviar);
-        btnenviar.setText("Dividir");
+        //obtenemos el idoden seleccionado
+        idorden = getArguments().getInt("idorden", 0);
 
-        //abrir el agregar comanda
-        btnenviar.setOnClickListener(new View.OnClickListener() {
+        btncerrar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                String aporte = calcularAporte();
-
-                Fragment fragment = new DetallesIguales();
-                Bundle bundle = new Bundle();
-                bundle.putString("aporte",aporte);
-                bundle.putInt("cantidad",cantidad);
-                fragment.setArguments(bundle);
+                Fragment fragment = new AgregarCarnet();
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.content, fragment);
                 transaction.addToBackStack(null);
@@ -115,23 +123,18 @@ public class DetallesOrdenIguales extends Fragment {
             }
         });
 
-        //obteniendo el id de la orden selecionada
-        Bundle bundle = getArguments();
-        int idorden = bundle.getInt("idOrden",0);
-        cantidad = bundle.getInt("cantidad",0);
-
-        //obtenemos los detalles
-        obtenerDetalles(idorden);
+        //obtener los detalles de ese id de orden
+        ObtenerDetalles(idorden);
 
         return rootView;
-
     }
 
-    private void obtenerDetalles(int idorden) {
+    //obtener las ordenes de un detalle
+    private void ObtenerDetalles(final int idOrden) {
 
         listadetalle = new ArrayList<>();
 
-        String uri = Constans.URLBASE+"DetallesDeOrdenWS/DetalleDeOrdenCuenta/" + idorden;
+        String uri = Constans.URLBASE+"DetallesDeOrdenWS/DetalleDeOrdenCuenta/" + idOrden;
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -165,18 +168,17 @@ public class DetallesOrdenIguales extends Fragment {
                     if (listadetalle.size() > 0) {
 
                         progressBar.setVisibility(View.GONE);
-
-                        //Calcular el total
-                        total.setText("$" + calcularTotal(listadetalle));
-
+                        linearLayout.setVisibility(View.VISIBLE);
                         adapter = new DetalleOrdenAdapter(listadetalle);
-
+                        //actualizamos el totl con la lista y apdatamos
+                        total.setText("$" + calcularTotal(listadetalle));
                         lista.setAdapter(adapter);
 
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
                         progressBar.setVisibility(View.GONE);
+                        linearLayout.setVisibility(View.VISIBLE);
                         Toast.makeText(rootView.getContext(), "Esta Orden no tiene detalles", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -184,8 +186,7 @@ public class DetallesOrdenIguales extends Fragment {
                             fm.popBackStack();
                         }
 
-                        //acordarse de abrir la vista anterior
-                        Fragment fragment = new OrdenComanda();
+                        Fragment fragment = new OrdenFinalizar();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
                         transaction.addToBackStack(null);
@@ -195,6 +196,7 @@ public class DetallesOrdenIguales extends Fragment {
                 } catch (JSONException ex) {
 
                     progressBar.setVisibility(View.GONE);
+                    linearLayout.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
                     ex.printStackTrace();
                 }
@@ -204,6 +206,7 @@ public class DetallesOrdenIguales extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
+                linearLayout.setVisibility(View.VISIBLE);
                 Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
@@ -215,7 +218,9 @@ public class DetallesOrdenIguales extends Fragment {
             }
         };
 
+
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
+
     }
 
     //Calclulamos el total del detalle para la orden
@@ -224,37 +229,12 @@ public class DetallesOrdenIguales extends Fragment {
         DecimalFormat format = new DecimalFormat();
         format.setMaximumFractionDigits(2);
 
-        Double total = 0.0;
-
-        for (DetalleDeOrden detalleActual : detalleDeOrdens) {
-            total = total + detalleActual.getCantidad() * detalleActual.getPrecio();
-        }
-
-        return format.format(total);
-    }
-
-    //calcula el total y devuelve un doble
-    private double calcularTotaldouble(List<DetalleDeOrden> detalleDeOrdens) {
-
         double total = 0;
 
         for (DetalleDeOrden detalleActual : detalleDeOrdens) {
             total = total + detalleActual.getCantidad() * detalleActual.getPrecio();
         }
-        return total;
-    }
-
-    private String calcularAporte()
-    {
-        //para que retorne la cadena como punto y no como una coma;
-        //NumberFormat nFormat = NumberFormat.getInstance(Locale.ENGLISH);
-        //DecimalFormat format = (DecimalFormat) nFormat;
-        DecimalFormat format = new DecimalFormat();
-        format.setMaximumFractionDigits(2);
-
-        double aporte = calcularTotaldouble(listadetalle)/cantidad;
-
-        return format.format(aporte);
+        return format.format(total);
     }
 
 }

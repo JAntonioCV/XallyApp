@@ -1,4 +1,4 @@
-package com.jantonioc.xalliapp.FragmentsComanda;
+package com.jantonioc.xalliapp.FragmentsFinalizar;
 
 
 import android.os.Bundle;
@@ -25,12 +25,13 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jantonioc.ln.Orden;
+import com.jantonioc.xalliapp.Adaptadores.PedidosAdapter;
 import com.jantonioc.xalliapp.Constans;
 import com.jantonioc.xalliapp.FragmentsOrdenes.Ordenes;
+import com.jantonioc.xalliapp.FragmentsPedidos.DetallesDeOrden;
 import com.jantonioc.xalliapp.MainActivity;
-import com.jantonioc.xalliapp.VolleySingleton;
-import com.jantonioc.xalliapp.Adaptadores.OrdenComandaAdapter;
 import com.jantonioc.xalliapp.R;
+import com.jantonioc.xalliapp.VolleySingleton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,22 +47,19 @@ import java.util.Map;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class OrdenComanda extends Fragment {
+public class OrdenFinalizar extends Fragment {
 
-    //interfaz
     private View rootView;
     private RecyclerView lista;
     private ProgressBar progressBar;
     private List<Orden> listaPedidos;
 
-    private OrdenComandaAdapter adapter;
+    private PedidosAdapter adapter;
 
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    private int idcliente;
 
-
-    public OrdenComanda() {
+    public OrdenFinalizar() {
         // Required empty public constructor
     }
 
@@ -72,7 +70,7 @@ public class OrdenComanda extends Fragment {
 
         //cambiar el nombre del toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Ordenes");
+        toolbar.setTitle("Finalizar Orden");
 
         //ocultar el floating boton
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
@@ -88,16 +86,13 @@ public class OrdenComanda extends Fragment {
         progressBar = rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
-        Bundle bundle = getArguments();
-        idcliente = bundle.getInt("idCliente",0);
-
         //swipe to refresh
         swipeRefreshLayout = rootView.findViewById(R.id.swipe);
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                listaPedidos(idcliente);
+                listaPedidos();
                 adapter.notifyDataSetChanged();
                 swipeRefreshLayout.setRefreshing(false);
 
@@ -105,17 +100,19 @@ public class OrdenComanda extends Fragment {
         });
 
         //listar los pedidos
-        listaPedidos(idcliente);
+        listaPedidos();
 
+
+        // Inflate the layout for this fragment
         return rootView;
     }
 
-    private void listaPedidos(int idcliente)
+    private void listaPedidos()
     {
         //limpiar los pedidos al consultar al WS
         listaPedidos= new ArrayList<>();
 
-        String uri = Constans.URLBASE+"OrdenesWS/OrdenesPorHuesped/"+idcliente;
+        String uri = Constans.URLBASE+"OrdenesWS/Ordenes";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -162,32 +159,27 @@ public class OrdenComanda extends Fragment {
 
                         progressBar.setVisibility(View.GONE);
 
-                        adapter = new OrdenComandaAdapter(listaPedidos);
+                        adapter = new PedidosAdapter(listaPedidos);
 
                         //listener al darle click
                         adapter.setClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
 
-                                Fragment fragment = new DetallesComanda();
-                                Bundle bundle = new Bundle();
-                                bundle.putInt("idOrden",listaPedidos.get(lista.getChildAdapterPosition(v)).getId());
-                                MainActivity.comanda.setIdorden(listaPedidos.get(lista.getChildAdapterPosition(v)).getId());
-                                fragment.setArguments(bundle);
-                                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                                transaction.replace(R.id.content, fragment);
-                                transaction.addToBackStack(null);
-                                transaction.commit();
+                                //ver el detalle de orden
+                                detalleOrden(listaPedidos.get(lista.getChildAdapterPosition(v)).getId());
                             }
                         });
 
                         lista.setAdapter(adapter);
+
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
+
                         //aun tengo que poner uno por defecto de bienvenida
                         progressBar.setVisibility(View.GONE);
-                        Toast.makeText(rootView.getContext(), "No se poseen ordenes para el dia de hoy", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(rootView.getContext(), "No hay ordenes abiertas", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
                         for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
@@ -230,6 +222,23 @@ public class OrdenComanda extends Fragment {
 
     }
 
+    private void detalleOrden(int idorden)
+    {
+        //Abrir el fragmento del detalle de Orden
+        Fragment fragment = new DetallesDeOrdenFinalizar();
+        //Pasar parametros entre fragment
+        Bundle bundle = new Bundle();
+        //mandar el objeto serializado
+        bundle.putInt("idorden",idorden);
+        fragment.setArguments(bundle);
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+
+
     //obtener la fecha en forato legible para el usuario
     private static String ConvertirJsonFecha(String jsonfecha)
     {
@@ -250,7 +259,5 @@ public class OrdenComanda extends Fragment {
 
         return new SimpleDateFormat("hh:mm a").format(fecha);
     }
-
-
 
 }

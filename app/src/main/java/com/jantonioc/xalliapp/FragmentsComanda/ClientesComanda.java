@@ -26,6 +26,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jantonioc.ln.Cliente;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.FragmentsOrdenes.Ordenes;
 import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.VolleySingleton;
 import com.jantonioc.xalliapp.Adaptadores.ClientesAdapter;
@@ -158,6 +159,7 @@ public class ClientesComanda extends Fragment {
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
+                        //aun tengo que poner uno por defecto de bienvenida
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(rootView.getContext(), "No se encuentran clientes con ordenes sin pagar", Toast.LENGTH_SHORT).show();
 
@@ -166,11 +168,9 @@ public class ClientesComanda extends Fragment {
                             fm.popBackStack();
                         }
 
-                        //aqui tengo que ver donde lo mando aun
-                        Fragment fragment = new ClientesComanda();
+                        Fragment fragment = new Ordenes();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.content, fragment);
-                        transaction.addToBackStack(null);
+                        transaction.add(R.id.content, fragment);
                         transaction.commit();
                     }
 
@@ -186,7 +186,7 @@ public class ClientesComanda extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
         })
@@ -194,14 +194,7 @@ public class ClientesComanda extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-
-                //authorizacion basica con las credenciales del usuario en la db del sistema
-                String [] cred  = Constans.obtenerDatos(rootView.getContext());
-                HashMap<String, String> params = new HashMap<String, String>();
-                String creds = String.format("%s:%s",cred[0],cred[1]);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
-                params.put("Authorization", auth);
-                return params;
+                return Constans.getToken();
             }
         };
 

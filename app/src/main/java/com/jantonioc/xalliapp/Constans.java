@@ -2,12 +2,23 @@ package com.jantonioc.xalliapp;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Base64;
+import android.widget.Toast;
 
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.HashMap;
 
 public class Constans {
 
@@ -29,6 +40,9 @@ public class Constans {
     private static EncryptedSharedPreferences sharedPreferences;
     private static final String USER="user";
     private static final String PASS="pass";
+
+    //token
+    private static HashMap<String,String> token = new HashMap<>();
 
     //obtener los datos de la credenciales para el login
     public static String [] obtenerDatos(Context context)
@@ -110,5 +124,45 @@ public class Constans {
 
         return false;
     }
+
+    public static void setToken(Context context) {
+
+        String usser,pass;
+        sharedPreferences = obtenerInstancia(context);
+
+        usser = sharedPreferences.getString(USER, "");
+        pass = sharedPreferences.getString(PASS, "");
+
+        String creds = String.format("%s:%s",usser,pass);
+        String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
+
+        Constans.token.put("Authorization",auth);
+    }
+
+    public static HashMap<String, String> getToken() {
+        return token;
+    }
+
+    public static String errorVolley(VolleyError error)
+    {
+        //mostrar ciertos errores
+        if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+            return "Error de comunicacion";
+        } else if (error instanceof AuthFailureError) {
+            return "Error de Autentificación";
+        } else if (error instanceof ServerError) {
+            return "Error del Servidor";
+        } else if (error instanceof NetworkError) {
+            return "Error de conexion de red o wifi";
+        } else if (error instanceof ParseError) {
+            return "Error de analisis";
+        }else
+        {
+            return "A ocurrido un error inesperado";
+        }
+    }
+
+
+
 
 }
