@@ -43,7 +43,7 @@ import com.jantonioc.xalliapp.Constans;
 import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.R;
 import com.jantonioc.xalliapp.Retrofit.NetworkClient;
-import com.jantonioc.xalliapp.Retrofit.UploadAPI;
+import com.jantonioc.xalliapp.Retrofit.IWebServicesAPI;
 import com.jantonioc.xalliapp.VolleySingleton;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.NetworkPolicy;
@@ -423,7 +423,7 @@ public class AgregarComanda extends Fragment {
         File file = new File(path);
 
         //obtener la instancia de retrofit
-        Retrofit retrofit = NetworkClient.getRetrofit(getActivity().getApplicationContext());
+        Retrofit retrofit = NetworkClient.getRetrofit();
 
         //cabecera del tipo de dato
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"),file);
@@ -435,10 +435,10 @@ public class AgregarComanda extends Fragment {
         RequestBody ordenid = RequestBody.create(MediaType.parse("text/plain"),String.valueOf(MainActivity.comanda.getIdorden()));
 
         //Creacioin de la interfaz de retrofit para traer los servicios
-        UploadAPI uploadAPI = retrofit.create(UploadAPI.class);
+        IWebServicesAPI iwebServicesAPI = retrofit.create(IWebServicesAPI.class);
 
         //pasamos la foto y el id
-        uploadAPI.uploadComanda(photo,ordenid).enqueue(new Callback<ResultadoWS>() {
+        iwebServicesAPI.uploadComanda(photo,ordenid).enqueue(new Callback<ResultadoWS>() {
             @Override
             public void onResponse(Call<ResultadoWS> call, retrofit2.Response<ResultadoWS> response) {
 
@@ -472,6 +472,7 @@ public class AgregarComanda extends Fragment {
                 progressBar.setVisibility(View.GONE);
                 imagencomanda.setVisibility(View.VISIBLE);
                 Toast.makeText(rootView.getContext(),t.getMessage(), Toast.LENGTH_SHORT).show();
+
 
             }
         });

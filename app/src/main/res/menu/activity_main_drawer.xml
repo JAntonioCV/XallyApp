@@ -51,13 +51,13 @@
             <group android:checkableBehavior="single" >
                 <item
                     android:id="@+id/nav_repor1"
-                    android:icon="@drawable/ic_add_circle"
-                    android:title="Guardar Comanda" />
+                    android:icon="@drawable/ic_pie_chart_"
+                    android:title="Productos mas vendidos" />
 
                 <item
                     android:id="@+id/nav_repor2"
-                    android:icon="@drawable/ic_add_circle"
-                    android:title="Carnet Diplomatico" />
+                    android:icon="@drawable/ic_insert_chart"
+                    android:title="Ventas Mensuales" />
             </group>
         </menu>
     </item>

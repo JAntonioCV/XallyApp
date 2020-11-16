@@ -57,7 +57,7 @@ public class CategoriaAdapter extends RecyclerView.Adapter<CategoriaAdapter.hold
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
             List<Categoria> filteredList=new ArrayList<>();
-            if(constraint== null || constraint.length() == 0)
+            if(constraint == null || constraint.length() == 0)
             {
                 filteredList.addAll(listafull);
             }else
@@ -84,7 +84,6 @@ public class CategoriaAdapter extends RecyclerView.Adapter<CategoriaAdapter.hold
             lista.clear();
             lista.addAll((List)results.values);
             notifyDataSetChanged();
-
         }
     };
 

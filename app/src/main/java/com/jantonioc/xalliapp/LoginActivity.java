@@ -3,6 +3,7 @@ package com.jantonioc.xalliapp;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.security.crypto.EncryptedSharedPreferences;
 
+import android.accounts.NetworkErrorException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -13,9 +14,13 @@ import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.RespuestaLogin;
-import com.jantonioc.xalliapp.Retrofit.ErrorHandlingAdapter;
 import com.jantonioc.xalliapp.Retrofit.NetworkClient;
-import com.jantonioc.xalliapp.Retrofit.UploadAPI;
+import com.jantonioc.xalliapp.Retrofit.IWebServicesAPI;
+
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.util.concurrent.TimeoutException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -68,10 +73,10 @@ public class LoginActivity extends AppCompatActivity {
             progressBar.setVisibility(View.VISIBLE);
 
             //mandamos el contexto para que se puedan obbtener la autenticacion del cliente
-            Retrofit retrofit = NetworkClient.getRetrofit(getApplicationContext());
-            UploadAPI uploadAPI = retrofit.create(UploadAPI.class);
+            Retrofit retrofit = NetworkClient.getRetrofit();
+            IWebServicesAPI iwebServicesAPI = retrofit.create(IWebServicesAPI.class);
             //utiliza el servicio login para iniciar sesion
-            uploadAPI.Login(userName,password).enqueue(new Callback<RespuestaLogin>() {
+            iwebServicesAPI.Login(userName,password).enqueue(new Callback<RespuestaLogin>() {
                 @Override
                 public void onResponse(Call<RespuestaLogin> call, Response<RespuestaLogin> response) {
                     //si la peticion es exitosa
@@ -126,7 +131,14 @@ public class LoginActivity extends AppCompatActivity {
                     txtusuario.setVisibility(View.VISIBLE);
                     txtcontraseña.setVisibility(View.VISIBLE);
                     btniniciar.setVisibility(View.VISIBLE);
-                    Toast.makeText(LoginActivity.this,t.getMessage(),Toast.LENGTH_SHORT).show();
+
+                    if(t instanceof TimeoutException)
+                    {
+                        Toast.makeText(LoginActivity.this,"Error de comunicacion",Toast.LENGTH_SHORT).show();
+                    }
+
+
+                    //Toast.makeText(LoginActivity.this,"Ah ocurrido un error inesperado razón: "+ t.getMessage(),Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -162,11 +174,11 @@ public class LoginActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
 
         //mandamos el contexto para que se puedan obbtener la autenticacion del cliente
-        Retrofit retrofit = NetworkClient.getRetrofit(getApplicationContext());
-        UploadAPI uploadAPI = retrofit.create(UploadAPI.class);
+        Retrofit retrofit = NetworkClient.getRetrofit();
+        IWebServicesAPI iwebServicesAPI = retrofit.create(IWebServicesAPI.class);
 
         //utiliza el servicio login para iniciar sesion
-        uploadAPI.Login(txtusuario.getEditText().getText().toString().trim(),txtcontraseña.getEditText().getText().toString().trim()).enqueue(new Callback<RespuestaLogin>() {
+        iwebServicesAPI.Login(txtusuario.getEditText().getText().toString().trim(),txtcontraseña.getEditText().getText().toString().trim()).enqueue(new Callback<RespuestaLogin>() {
             @Override
             public void onResponse(Call<RespuestaLogin> call, Response<RespuestaLogin> response) {
 
@@ -213,6 +225,17 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this,response.body().getNombreCompleto(),Toast.LENGTH_SHORT).show();
                     }
                 }
+                else
+                {
+                    //si da error mostrar el error y mostrar las vistas
+                    progressBar.setVisibility(View.GONE);
+                    imageView.setVisibility(View.VISIBLE);
+                    txtusuario.setVisibility(View.VISIBLE);
+                    txtcontraseña.setVisibility(View.VISIBLE);
+                    btniniciar.setVisibility(View.VISIBLE);
+
+                    Toast.makeText(LoginActivity.this,response.message(),Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
@@ -224,7 +247,23 @@ public class LoginActivity extends AppCompatActivity {
                 txtusuario.setVisibility(View.VISIBLE);
                 txtcontraseña.setVisibility(View.VISIBLE);
                 btniniciar.setVisibility(View.VISIBLE);
-                Toast.makeText(LoginActivity.this,t.getMessage(),Toast.LENGTH_SHORT).show();
+
+                if(t instanceof SocketTimeoutException)
+                {
+
+                    Toast.makeText(LoginActivity.this,"El servidor a tardado en responder",Toast.LENGTH_SHORT).show();
+
+                }
+                else if(t instanceof ConnectException)
+                {
+
+                    Toast.makeText(LoginActivity.this,"Error de conexion, revise su conexion a internet",Toast.LENGTH_SHORT).show();
+
+                } else {
+
+                     Toast.makeText(LoginActivity.this,"Ah ocurrido un error desconocido: " + t.getMessage(),Toast.LENGTH_SHORT).show();
+
+                }
             }
         });
     }

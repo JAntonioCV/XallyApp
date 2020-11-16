@@ -40,11 +40,10 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jantonioc.ln.ResultadoWS;
 import com.jantonioc.xalliapp.Constans;
-import com.jantonioc.xalliapp.FragmentsComanda.ClientesComanda;
 import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.R;
 import com.jantonioc.xalliapp.Retrofit.NetworkClient;
-import com.jantonioc.xalliapp.Retrofit.UploadAPI;
+import com.jantonioc.xalliapp.Retrofit.IWebServicesAPI;
 import com.jantonioc.xalliapp.VolleySingleton;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.NetworkPolicy;
@@ -423,15 +422,15 @@ public class AgregarCarnet extends Fragment {
         File file = new File(path);
 
         //obtener la instancia de retrofit
-        Retrofit retrofit = NetworkClient.getRetrofit(getActivity().getApplicationContext());
+        Retrofit retrofit = NetworkClient.getRetrofit();
         //cabecera del tipo de dato
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"),file);
         //la foto para que sea enviada como un formulario
         MultipartBody.Part photo = MultipartBody.Part.createFormData("photo",file.getName(),requestBody);
         //Creacioin de la interfaz de retrofit para traer los servicios
-        UploadAPI uploadAPI = retrofit.create(UploadAPI.class);
+        IWebServicesAPI iwebServicesAPI = retrofit.create(IWebServicesAPI.class);
         //pasamos la foto y el id
-        uploadAPI.uploadCarnet(photo).enqueue(new Callback<ResultadoWS>() {
+        iwebServicesAPI.uploadCarnet(photo).enqueue(new Callback<ResultadoWS>() {
             @Override
             public void onResponse(Call<ResultadoWS> call, retrofit2.Response<ResultadoWS> response) {
 

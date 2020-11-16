@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         //Abrimos por defecto como primer interfaz el fragment ordenes
-        fragment = new Ordenes();
+        fragment = new prueba();
 
         //Cargamos el fragment
         cargarFragment(fragment);
@@ -246,14 +246,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
 
             case R.id.nav_repor1:
-                fragment = new ReporteBarChart();
+                fragment = new ReportePieChart();
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
                 MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_repor2:
-                fragment = new ReportePieChart();
+                fragment = new ReporteBarChart();
                 MainActivity.listadetalle.clear();
                 MainActivity.orden = new Orden();
                 MainActivity.modpedidos = false;

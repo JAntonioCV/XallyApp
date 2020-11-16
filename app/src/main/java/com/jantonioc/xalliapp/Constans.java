@@ -24,7 +24,9 @@ public class Constans {
 
     //Constante para los servicios WEB
     //public static final String URLBASE="http://proyectoxally.somee.com/";
-    public static final String URLBASE="http://192.168.0.52/ProyectoXalli_Gentelella/";
+    //public static final String URLBASE="http://192.168.0.52/ProyectoXalli_Gentelella/";
+    public static final String URLBASE="http://172.16.30.168/ProyectoXalli_Gentelella/";
+
 
     //para el nombre de usuario, id y rol
     public static int id;
@@ -141,6 +143,14 @@ public class Constans {
 
     public static HashMap<String, String> getToken() {
         return token;
+    }
+
+    public static String getTokenR() {
+        if(token.get("Authorization")==null)
+        {
+            return "";
+        }
+        return token.get("Authorization");
     }
 
     public static String errorVolley(VolleyError error)

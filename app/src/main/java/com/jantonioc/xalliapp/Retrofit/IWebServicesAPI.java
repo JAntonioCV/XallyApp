@@ -1,7 +1,11 @@
 package com.jantonioc.xalliapp.Retrofit;
 
+import com.jantonioc.ln.ProductoVendido;
 import com.jantonioc.ln.RespuestaLogin;
 import com.jantonioc.ln.ResultadoWS;
+import com.jantonioc.ln.VentasMes;
+
+import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -13,7 +17,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
 
-public interface UploadAPI {
+public interface IWebServicesAPI {
 
     //Metodo que utliza retrofit para enviar una imagen al server
     @Multipart
@@ -38,4 +42,13 @@ public interface UploadAPI {
             @Query("pass") String pass
     );
 
+    @GET("ReportesWS/ProductosMasVendidos")
+    Call<List<ProductoVendido>> productosMasVendidos(
+            @Query("fecha") String fecha
+    );
+
+    @GET("ReportesWS/VentasMensuales")
+    Call<List<VentasMes>> ventasPorAnio(
+            @Query("fecha") String fecha
+    );
 }
