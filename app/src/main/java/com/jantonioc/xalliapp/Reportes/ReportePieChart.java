@@ -2,6 +2,7 @@ package com.jantonioc.xalliapp.Reportes;
 
 
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -28,8 +29,11 @@ import com.jantonioc.xalliapp.R;
 import com.jantonioc.xalliapp.Retrofit.NetworkClient;
 import com.jantonioc.xalliapp.Retrofit.IWebServicesAPI;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -48,6 +52,9 @@ public class ReportePieChart extends Fragment {
     private List<ProductoVendido> lista;
     PieChart pieChart;
     String fecha;
+    private Date date = new Date();
+    private DateFormat hourFormat = new SimpleDateFormat("HH:mm:ss");
+    private boolean abierto = false;
 
     public ReportePieChart() {
         // Required empty public constructor
@@ -76,22 +83,34 @@ public class ReportePieChart extends Fragment {
             @Override
             public void onClick(View v) {
 
-                DatePickerDialog datePickerDialog = new DatePickerDialog(rootView.getContext(),
-                        new DatePickerDialog.OnDateSetListener() {
+                if(!abierto)
+                {
+                    abierto = true;
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(rootView.getContext(),
+                            new DatePickerDialog.OnDateSetListener() {
 
-                            @Override
-                            public void onDateSet(DatePicker view, int year,
-                                                  int monthOfYear, int dayOfMonth) {
+                                @Override
+                                public void onDateSet(DatePicker view, int year,
+                                                      int monthOfYear, int dayOfMonth) {
 
-                                fechatxt.setText( dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-                                fecha = (monthOfYear + 1)+ "-" + dayOfMonth + "-" + year;
+                                    fechatxt.setText( dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
+                                    fecha = (monthOfYear + 1)+ "-" + dayOfMonth + "-" + year;
 
-                                obtenerdatos(fecha);
+                                    obtenerdatos(fecha);
 
-                            }
-                        }, mYear, mMonth, mDay);
+                                }
+                            }, mYear, mMonth, mDay);
 
-                datePickerDialog.show();
+                    datePickerDialog.show();
+                    datePickerDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            abierto = false;
+                        }
+                    });
+                }
+
+
             }
         });
 
@@ -130,6 +149,9 @@ public class ReportePieChart extends Fragment {
     {
         if(!fecha.isEmpty())
         {
+            String hora = hourFormat.format(date);
+            fecha = fecha +" "+ hora;
+
             Retrofit retrofit = NetworkClient.getRetrofit();
             IWebServicesAPI iwebServicesAPI = retrofit.create(IWebServicesAPI.class);
             iwebServicesAPI.productosMasVendidos(fecha).enqueue(new Callback<List<ProductoVendido>>() {
@@ -178,7 +200,7 @@ public class ReportePieChart extends Fragment {
         //posicion donde se mostraran las descripciones
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
         //como se van a alinear
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
         //como se van a alinear
         l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
         //habilitar las legendas sin corte

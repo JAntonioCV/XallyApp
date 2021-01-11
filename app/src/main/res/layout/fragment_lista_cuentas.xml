@@ -5,9 +5,22 @@
     android:layout_height="match_parent"
     tools:context="com.jantonioc.xalliapp.FragmentsCuenta.ListaCuentas">
 
+    <TextView
+        android:id="@+id/itemfaltante"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:gravity="center_horizontal"
+        android:text="Item Faltante">
+
+    </TextView>
+
     <ExpandableListView
         android:id="@+id/expandiblelist"
         android:layout_width="match_parent"
+        android:layout_centerInParent="true"
+        android:layout_below="@+id/itemfaltante"
         android:layout_height="match_parent"/>
 
 </RelativeLayout>

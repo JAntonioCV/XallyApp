@@ -15,7 +15,9 @@ import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,12 +27,15 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.jantonioc.ln.Orden;
 import com.jantonioc.xalliapp.Adaptadores.PedidosAdapter;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.FragmentsComanda.OrdenComanda;
 import com.jantonioc.xalliapp.FragmentsOrdenes.Ordenes;
 import com.jantonioc.xalliapp.FragmentsPedidos.DetallesDeOrden;
 import com.jantonioc.xalliapp.MainActivity;
+import com.jantonioc.xalliapp.Principal;
 import com.jantonioc.xalliapp.R;
 import com.jantonioc.xalliapp.VolleySingleton;
 
@@ -45,19 +50,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.jantonioc.xalliapp.MainActivity.navigationView;
+
 /**
  * A simple {@link Fragment} subclass.
  */
-public class OrdenCarnet extends Fragment {
+public class OrdenCarnet extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     private View rootView;
     private RecyclerView lista;
-    private ProgressBar progressBar;
     private List<Orden> listaPedidos;
 
     private PedidosAdapter adapter;
 
     private SwipeRefreshLayout swipeRefreshLayout;
+
+    private RelativeLayout relativeLayout;
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+
+    private Button btnreintentar;
 
 
     public OrdenCarnet() {
@@ -73,31 +85,44 @@ public class OrdenCarnet extends Fragment {
         toolbar.setTitle("Ordenes");
 
         //ocultar el floating boton
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
         //vista del fragment
         rootView = inflater.inflate(R.layout.fragment_pedidos, container, false);
+
+        relativeLayout = rootView.findViewById(R.id.relativePedidos);
+        noconection = rootView.findViewById(R.id.noconection);
+        relativeLayout.setVisibility(View.GONE);
+
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
+
         //recycler view
         lista = rootView.findViewById(R.id.recyclerViewPedidos);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
-        //progressbar
-        progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
+
 
         //swipe to refresh
         swipeRefreshLayout = rootView.findViewById(R.id.swipe);
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                listaPedidos();
-                adapter.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        OrdenCarnet.this.listaPedidos();
+
+                    }
+                });
             }
         });
+
 
         //listar los pedidos
         listaPedidos();
@@ -109,6 +134,10 @@ public class OrdenCarnet extends Fragment {
 
     private void listaPedidos()
     {
+        swipeRefreshLayout.setRefreshing(true);
+        relativeLayout.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
+
         //limpiar los pedidos al consultar al WS
         listaPedidos= new ArrayList<>();
 
@@ -141,13 +170,14 @@ public class OrdenCarnet extends Fragment {
                                 obj.getInt("id"),
                                 obj.getInt("codigo"),
                                 fecha,
-                                hora,
+                                obj.getString("horaorden"),
                                 obj.getInt("estado"),
                                 obj.getInt("clienteid"),
                                 obj.getInt("meseroid"),
+                                obj.getInt("mesaid"),
                                 obj.getString("cliente"),
-                                obj.getString("mesero")
-
+                                obj.getString("mesero"),
+                                obj.getString("mesa")
                         );
 
                         //Agregando a la lista de orden
@@ -157,7 +187,8 @@ public class OrdenCarnet extends Fragment {
                     //Si la lista es mayor que 0 adaptamos y hacemos el evento on click
                     if (listaPedidos.size() > 0) {
 
-                        progressBar.setVisibility(View.GONE);
+                        swipeRefreshLayout.setRefreshing(false);
+                        relativeLayout.setVisibility(View.VISIBLE);
 
                         adapter = new PedidosAdapter(listaPedidos);
 
@@ -182,9 +213,9 @@ public class OrdenCarnet extends Fragment {
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
-
+                        navigationView.getMenu().getItem(1).getSubMenu().getItem(1).setChecked(false);
                         //aun tengo que poner uno por defecto de bienvenida
-                        progressBar.setVisibility(View.GONE);
+                        swipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(rootView.getContext(), "No se poseen ordenes para el dia de hoy", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -192,25 +223,27 @@ public class OrdenCarnet extends Fragment {
                             fm.popBackStack();
                         }
 
-                        Fragment fragment = new Ordenes();
+                        Fragment fragment = new Principal();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.add(R.id.content, fragment);
                         transaction.commit();
                     }
 
                 } catch (JSONException ex) {
-
-                    progressBar.setVisibility(View.GONE);
+                    //excepcion json
+                    swipeRefreshLayout.setRefreshing(false);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
+
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+                swipeRefreshLayout.setRefreshing(false);
+                noconection.setVisibility(View.VISIBLE);
+                Toast.makeText(rootView.getContext(), Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+
 
             }
         })
@@ -218,7 +251,7 @@ public class OrdenCarnet extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -267,4 +300,8 @@ public class OrdenCarnet extends Fragment {
         return new SimpleDateFormat("hh:mm a").format(fecha);
     }
 
+    @Override
+    public void onRefresh() {
+        listaPedidos();
+    }
 }

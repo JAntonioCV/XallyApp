@@ -7,8 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +20,7 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -24,8 +28,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.jantonioc.ln.Menu;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.R;
 import com.jantonioc.xalliapp.VolleySingleton;
 
@@ -43,16 +49,24 @@ import static com.jantonioc.xalliapp.Constans.URLBASE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DetalleMenu extends Fragment {
+public class DetalleMenu extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     //interfaz
     private View rootView;
     private ListView lista;
     private TextView nombre, precio, tiempo;
-    private ProgressBar progressBar;
     private CardView cardinfo,cardingre;
     private List<String> ingredientes = new ArrayList();
+    Menu menu;
 
+    //swipe to refresh
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+    private LinearLayout linearLayout;
+
+    private Button btnreintentar;
 
     public DetalleMenu() {
         // Required empty public constructor
@@ -68,12 +82,17 @@ public class DetalleMenu extends Fragment {
         toolbar.setTitle("Detalle Menu");
 
         //ocultar el boton flotante
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
 
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_detalle_menu, container, false);
+
+        linearLayout = rootView.findViewById(R.id.linearlayoutDetalleMenu);
+        noconection = rootView.findViewById(R.id.noconection);
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
 
         cardinfo = rootView.findViewById(R.id.cardinformacion);
         cardingre = rootView.findViewById(R.id.cardingredientes);
@@ -82,18 +101,33 @@ public class DetalleMenu extends Fragment {
         nombre = rootView.findViewById(R.id.itemnombre);
         precio = rootView.findViewById(R.id.itemprecio);
         tiempo = rootView.findViewById(R.id.itemtiempo);
-        progressBar = rootView.findViewById(R.id.progressBar);
+
+        //swipe to refresh
+        swipeRefreshLayout = rootView.findViewById(R.id.swipe);
+        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
+        swipeRefreshLayout.setOnRefreshListener(this);
 
         //Ocultando las csrd para que se muestren hasta que se cargien los datos
         cardinfo.setVisibility(View.GONE);
         cardingre.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
-
 
         //obtenemos el objeto menu serializado
         Bundle bundle = getArguments();
-        Menu menu = (Menu) bundle.getSerializable("Menu");
+        menu = (Menu) bundle.getSerializable("Menu");
 
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        DetalleMenu.this.detalleMenu(menu);
+
+                    }
+                });
+            }
+        });
 
         //por el id del menu
         detalleMenu(menu);
@@ -104,11 +138,19 @@ public class DetalleMenu extends Fragment {
     //obtener informacion de los platillos
     private void detalleMenu(final Menu menu) {
 
+        swipeRefreshLayout.setRefreshing(true);
+        cardinfo.setVisibility(View.GONE);
+        cardingre.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
+        ingredientes = new ArrayList<>();
+
         String uri = URLBASE+"IngredientesWS/IngredientesMenu/" + menu.getId();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
+
+                   swipeRefreshLayout.setRefreshing(false);
 
                     //Obteniendo la informacion del array de los platillos
                     JSONArray jsonArray = new JSONArray(response);
@@ -127,12 +169,11 @@ public class DetalleMenu extends Fragment {
                         cardinfo.setVisibility(View.VISIBLE);
                         cardingre.setVisibility(View.VISIBLE);
 
-                        progressBar.setVisibility(View.GONE);
-
                         //Mandamos la informacion
                         nombre.setText(menu.getDescripcion());
                         precio.setText("Precio: " + Double.valueOf(menu.getPrecio()).toString() + " $");
-                        tiempo.setText("Tiempo estimado: " + menu.getTiempoestimado() + " minutos");
+                        String tiempoestimado = menu.getTiempoestimado().equalsIgnoreCase("null") || menu.getTiempoestimado().isEmpty()  ? "Inmediato" : menu.getTiempoestimado();
+                        tiempo.setText("Tiempo estimado: " + tiempoestimado);
 
                         ArrayAdapter adapter = new ArrayAdapter<>(rootView.getContext(), android.R.layout.simple_list_item_1, ingredientes);
 
@@ -141,7 +182,9 @@ public class DetalleMenu extends Fragment {
                     }
                     else {
                         //Si el objteo es null
-                        progressBar.setVisibility(View.GONE);
+
+                        swipeRefreshLayout.setRefreshing(false);
+
                         Toast.makeText(rootView.getContext(), "Este Menu no posee Detalle", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -161,24 +204,34 @@ public class DetalleMenu extends Fragment {
                     }
 
                 } catch (JSONException ex) {
-                    progressBar.setVisibility(View.GONE);
+
+                    //excepcion json
+                    swipeRefreshLayout.setRefreshing(false);
+                    cardinfo.setVisibility(View.GONE);
+                    cardingre.setVisibility(View.GONE);
+                    noconection.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
+
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+
+                swipeRefreshLayout.setRefreshing(false);
+                cardinfo.setVisibility(View.GONE);
+                cardingre.setVisibility(View.GONE);
+                noconection.setVisibility(View.VISIBLE);
+                Toast.makeText(rootView.getContext(), Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+
             }
         })
         {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -187,4 +240,8 @@ public class DetalleMenu extends Fragment {
     }
 
 
+    @Override
+    public void onRefresh() {
+        detalleMenu(menu);
+    }
 }

@@ -1,6 +1,7 @@
 package com.jantonioc.xalliapp.Retrofit;
 
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.MainActivity;
 
 import java.io.IOException;
 
@@ -21,7 +22,7 @@ public class BasicAuthInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Request authenticatedRequest = request.newBuilder()
-                .header("Authorization", Constans.getTokenR()).build();
+                .header("Authorization", MainActivity.getTokenR()).build();
         return chain.proceed(authenticatedRequest);
     }
 }

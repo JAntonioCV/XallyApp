@@ -16,59 +16,70 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"/>
 
-    <ImageView
-        android:id="@+id/logo"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:paddingBottom="4dp"
-        android:layout_above="@id/Usuario"
-        android:src="@drawable/logoblack"/>
+        android:layout_height="match_parent">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/Usuario"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_above="@id/contraseña">
-
-        <com.google.android.material.textfield.TextInputEditText
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Usuario"
-            android:inputType="text" />
+            android:orientation="vertical">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:paddingBottom="4dp"
+                android:layout_above="@id/Usuario"
+                android:src="@drawable/logoblack"/>
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/Usuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_above="@id/contraseña">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/contraseña"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        app:passwordToggleEnabled="true"
-        android:layout_centerInParent="true">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Usuario"
+                    android:inputType="text" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Contraseña"
-            android:inputType="textPassword" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <Button
-        android:id="@+id/iniciar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/contraseña"
-        android:textColor="@color/white"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        app:cornerRadius="5dp"
-        android:text="Iniciar sesion"
-        android:layout_centerHorizontal="true">
-    </Button>
+            </com.google.android.material.textfield.TextInputLayout>
 
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/contraseña"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:passwordToggleEnabled="true"
+                android:layout_centerInParent="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Contraseña"
+                    android:inputType="textPassword" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/iniciar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/contraseña"
+                android:textColor="@color/white"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                app:cornerRadius="5dp"
+                android:text="Iniciar sesion"
+                android:layout_centerHorizontal="true">
+            </Button>
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </RelativeLayout>

@@ -16,7 +16,7 @@
 
     <TextView
         android:id="@+id/errorTitle"
-        android:text="Sin conexión, intente de nuevo"
+        android:text="Algo salio mal, intentelo de nuevo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/black"

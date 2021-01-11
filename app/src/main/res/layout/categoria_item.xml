@@ -12,18 +12,35 @@
     app:cardUseCompatPadding="true"
     tools:ignore="Overdraw">
 
-        <TextView
-            android:id="@+id/itemcategoria"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="start"
-            android:maxLines="1"
-            android:text="Nombre Categoria"
-            android:layout_gravity="center"
-            android:textStyle="bold"
-            android:layout_margin="1.6dp"
-            style="@style/TextAppearance.AppCompat.Medium"
-            android:textAppearance="?android:attr/textAppearanceListItem" />
+            android:layout_height="match_parent">
 
+                <ImageView
+                    android:id="@+id/cardPerfil"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scaleType="center"
+                    android:padding="5dp"
+                    android:layout_centerInParent="true"
+                    android:layout_alignParentStart="true"
+                    android:src="@drawable/ic_menu" />
+
+                <TextView
+                    android:id="@+id/itemcategoria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:maxLines="1"
+                    android:text="Nombre Categoria"
+                    android:layout_gravity="center"
+                    android:textStyle="bold"
+                    android:padding="16dp"
+                    android:layout_centerInParent="true"
+                    android:layout_toEndOf="@id/cardPerfil"
+                    style="@style/TextAppearance.AppCompat.Medium"
+                    android:textAppearance="?android:attr/textAppearanceListItem" />
+
+        </RelativeLayout>
 
 </androidx.cardview.widget.CardView>

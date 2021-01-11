@@ -2,6 +2,7 @@ package com.jantonioc.xalliapp.Reportes;
 
 
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
@@ -38,6 +39,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.jantonioc.ln.ProductoVendido;
 import com.jantonioc.ln.VentasMes;
+import com.jantonioc.xalliapp.Constans;
 import com.jantonioc.xalliapp.R;
 import com.jantonioc.xalliapp.Retrofit.NetworkClient;
 import com.jantonioc.xalliapp.Retrofit.IWebServicesAPI;
@@ -66,6 +68,8 @@ public class ReporteBarChart extends Fragment {
     List<String> xAxisValues = new ArrayList<>(Arrays.asList("Ene", "Feb", "Mar", "Abr", "May", "Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"));
     BarChart barChart;
     String fecha;
+    private boolean abierto = false;
+
 
     public ReporteBarChart() {
         // Required empty public constructor
@@ -96,19 +100,29 @@ public class ReporteBarChart extends Fragment {
             @Override
             public void onClick(View v) {
 
-                DatePickerDialog datePickerDialog = new DatePickerDialog(rootView.getContext(),
-                        new DatePickerDialog.OnDateSetListener() {
+                if(!abierto)
+                {
+                    abierto = true;
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(rootView.getContext(),
+                            new DatePickerDialog.OnDateSetListener() {
 
-                            @Override
-                            public void onDateSet(DatePicker view, int year,
-                                                  int monthOfYear, int dayOfMonth) {
+                                @Override
+                                public void onDateSet(DatePicker view, int year,
+                                                      int monthOfYear, int dayOfMonth) {
 
-                                fechatxt.setText( dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-                                fecha = (monthOfYear + 1)+ "-" + dayOfMonth + "-" + year;
-                                obtenerdatos(fecha);
-                            }
-                        }, mYear, mMonth, mDay);
-                datePickerDialog.show();
+                                    fechatxt.setText( dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
+                                    fecha = (monthOfYear + 1)+ "-" + dayOfMonth + "-" + year;
+                                    obtenerdatos(fecha);
+                                }
+                            }, mYear, mMonth, mDay);
+                    datePickerDialog.show();
+                    datePickerDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            abierto = false;
+                        }
+                    });
+                }
             }
         });
 
@@ -143,14 +157,14 @@ public class ReporteBarChart extends Fragment {
                     }
                     else
                     {
-                        Toast.makeText(rootView.getContext(),"Ah ocurrido un error inesperado razon :" + response.message(),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(rootView.getContext(),"Error en el servidor razón :" + response.message(),Toast.LENGTH_SHORT).show();
                         barChart.clear();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<List<VentasMes>> call, Throwable t) {
-                    Toast.makeText(rootView.getContext(),"Ah ocurrido un error inesperado razón: "+ t.getMessage(),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(rootView.getContext(), Constans.errorRetrofit(t),Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -177,13 +191,7 @@ public class ReporteBarChart extends Fragment {
 
 
         Legend l = barChart.getLegend();
-        l.setWordWrapEnabled(true);
-        l.setTextSize(14);
-        l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-        l.setDrawInside(false);
-        l.setForm(Legend.LegendForm.CIRCLE);
+        l.setEnabled(false);
 
 
         XAxis xAxis = barChart.getXAxis();

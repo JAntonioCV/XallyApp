@@ -76,8 +76,10 @@ public class PedidosAdapter extends RecyclerView.Adapter<PedidosAdapter.holder> 
             TextView estado = itemView.findViewById(R.id.itemestado);
             TextView cliente = itemView.findViewById(R.id.itemcliente);
             TextView mesero = itemView.findViewById(R.id.itemmesero);
+            TextView mesa = itemView.findViewById(R.id.itemmesa);
 
             codigo.setText("Codigo: " + obj.getCodigo());
+            mesa.setText(obj.getMesa());
             fecha.setText("Fecha: " + obj.getFechaorden());
             hora.setText("Hora: " + obj.getTiempoorden());
             estado.setText("Estado: "+Obtenerestado(obj.getEstado()));

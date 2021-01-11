@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -105,7 +106,15 @@ public class CategoriaAdapter extends RecyclerView.Adapter<CategoriaAdapter.hold
         private void setcategoria(final Categoria obj, final Evento evt)
         {
             TextView textView=itemView.findViewById(R.id.itemcategoria);
+            ImageView imageView = itemView.findViewById(R.id.cardPerfil);
             textView.setText(obj.getDescripcion());
+            if(obj.isBar())
+            {
+                imageView.setImageResource(R.drawable.ic_wine_glass_full_of_drink);
+            }else
+            {
+                imageView.setImageResource(R.drawable.ic_dish_fork_and_knife);
+            }
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

@@ -64,7 +64,7 @@
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
                 app:cornerRadius="5dp"
-                android:text="Enviar" />
+                android:text="Confirmar" />
 
         </RelativeLayout>
 

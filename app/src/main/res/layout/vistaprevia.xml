@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:id="@+id/cardinformacion"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Title, secondary and supporting text -->
+            <TextView
+                android:id="@+id/itemtitulo"
+                android:layout_width="match_parent"
+                android:textStyle="bold"
+                android:layout_height="wrap_content"
+                android:text="Datos de la Orden"
+                android:gravity="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+            <!-- Title, secondary and supporting text -->
+            <TextView
+                android:id="@+id/itemmesa"
+                android:layout_width="match_parent"
+                android:textStyle="bold"
+                android:layout_height="wrap_content"
+                android:text="Mesa: "
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+            <!-- Title, secondary and supporting text -->
+            <TextView
+                android:id="@+id/itemcodigo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Codigo Orden: "
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+            <TextView
+                android:id="@+id/itemfecha"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Fecha:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+            <TextView
+                android:id="@+id/itemhora"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Hora:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <TextView
+                android:id="@+id/itemestado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="estado:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <TextView
+                android:id="@+id/itemcliente"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="cliente:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <TextView
+                android:id="@+id/itemmesero"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="mesero:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="?android:attr/textColorSecondary"
+                android:paddingBottom="10dp"
+                />
+
+            <Button
+                android:id="@+id/btnconfirmar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:paddingBottom="10dp"
+                app:cornerRadius="5dp"
+                android:text="Enviar" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+
+
+</LinearLayout>

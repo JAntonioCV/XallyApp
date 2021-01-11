@@ -3,7 +3,6 @@ package com.jantonioc.xalliapp;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.security.crypto.EncryptedSharedPreferences;
 
-import android.accounts.NetworkErrorException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -17,10 +16,8 @@ import com.jantonioc.ln.RespuestaLogin;
 import com.jantonioc.xalliapp.Retrofit.NetworkClient;
 import com.jantonioc.xalliapp.Retrofit.IWebServicesAPI;
 
-import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
-import java.util.concurrent.TimeoutException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -92,18 +89,14 @@ public class LoginActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(),"Error al almacenar las credenciales",Toast.LENGTH_SHORT);
                             }
 
-                            Constans.setToken(getApplicationContext());
+                            MainActivity.setToken(getApplicationContext());
 
-                            //obtener login
-                            RespuestaLogin servicio = response.body();
+                            MainActivity.user.setId(response.body().getId());
+                            MainActivity.user.setNombreCompleto(response.body().getNombreCompleto());
+                            MainActivity.user.setRol(response.body().getRol());
+                            MainActivity.user.setExito(response.body().isExito());
 
-                            //las contasntes
-                            Constans.id = servicio.getId();
-                            Constans.nombre = servicio.getNombreCompleto();
-                            Constans.rol = servicio.getRol();
-                            Constans.exito = servicio.isExito();
-
-                            Toast.makeText(LoginActivity.this, "Bienvenido " + servicio.getNombreCompleto() + "!!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "Bienvenido " + response.body().getNombreCompleto() + "!!", Toast.LENGTH_SHORT).show();
 
                             //abrir el main
                             Intent i = new Intent(LoginActivity.this, MainActivity.class);
@@ -132,13 +125,8 @@ public class LoginActivity extends AppCompatActivity {
                     txtcontraseña.setVisibility(View.VISIBLE);
                     btniniciar.setVisibility(View.VISIBLE);
 
-                    if(t instanceof TimeoutException)
-                    {
-                        Toast.makeText(LoginActivity.this,"Error de comunicacion",Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(LoginActivity.this,Constans.errorRetrofit(t),Toast.LENGTH_SHORT).show();
 
-
-                    //Toast.makeText(LoginActivity.this,"Ah ocurrido un error inesperado razón: "+ t.getMessage(),Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -195,18 +183,14 @@ public class LoginActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(),"Error al almacenar las credenciales",Toast.LENGTH_SHORT);
                         }
 
-                        Constans.setToken(getApplicationContext());
+                        MainActivity.setToken(getApplicationContext());
 
-                        //obtener login
-                        RespuestaLogin servicio = response.body();
+                        MainActivity.user.setId(response.body().getId());
+                        MainActivity.user.setNombreCompleto(response.body().getNombreCompleto());
+                        MainActivity.user.setRol(response.body().getRol());
+                        MainActivity.user.setExito(response.body().isExito());
 
-                        //las contasntes
-                        Constans.id = servicio.getId();
-                        Constans.nombre = servicio.getNombreCompleto();
-                        Constans.rol = servicio.getRol();
-                        Constans.exito = servicio.isExito();
-
-                        Toast.makeText(LoginActivity.this, "Bienvenido " + servicio.getNombreCompleto() + "!!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "Bienvenido " + response.body().getNombreCompleto() + "!!", Toast.LENGTH_SHORT).show();
 
                         //abrir el main
                         Intent i = new Intent(LoginActivity.this, MainActivity.class);
@@ -234,7 +218,7 @@ public class LoginActivity extends AppCompatActivity {
                     txtcontraseña.setVisibility(View.VISIBLE);
                     btniniciar.setVisibility(View.VISIBLE);
 
-                    Toast.makeText(LoginActivity.this,response.message(),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this,"Error del Servidor: " + response.message() ,Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -248,22 +232,7 @@ public class LoginActivity extends AppCompatActivity {
                 txtcontraseña.setVisibility(View.VISIBLE);
                 btniniciar.setVisibility(View.VISIBLE);
 
-                if(t instanceof SocketTimeoutException)
-                {
-
-                    Toast.makeText(LoginActivity.this,"El servidor a tardado en responder",Toast.LENGTH_SHORT).show();
-
-                }
-                else if(t instanceof ConnectException)
-                {
-
-                    Toast.makeText(LoginActivity.this,"Error de conexion, revise su conexion a internet",Toast.LENGTH_SHORT).show();
-
-                } else {
-
-                     Toast.makeText(LoginActivity.this,"Ah ocurrido un error desconocido: " + t.getMessage(),Toast.LENGTH_SHORT).show();
-
-                }
+                Toast.makeText(LoginActivity.this,Constans.errorRetrofit(t),Toast.LENGTH_SHORT).show();
             }
         });
     }

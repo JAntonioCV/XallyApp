@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">
-            172.16.30.168
+            proyectoxally.somee.com
+        </domain>
+        <domain includeSubdomains="true">
+            192.168.0.52
+        </domain>
+        <domain includeSubdomains="true">
+            192.168.137.119
+        </domain>
+        <domain includeSubdomains="true">
+            hotelxalli.com
         </domain>
     </domain-config>
-
 </network-security-config>

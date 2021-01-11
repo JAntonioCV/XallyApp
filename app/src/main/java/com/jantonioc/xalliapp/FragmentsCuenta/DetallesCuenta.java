@@ -1,6 +1,7 @@
 package com.jantonioc.xalliapp.FragmentsCuenta;
 
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -48,6 +49,8 @@ public class DetallesCuenta extends Fragment {
 
     Button btnagregar;
 
+    boolean abierto = false;
+
 
     public DetallesCuenta() {
         // Required empty public constructor
@@ -65,6 +68,8 @@ public class DetallesCuenta extends Fragment {
         //fab botton
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
+
+        MainActivity.cuenta = false;
 
         //vista
         rootView = inflater.inflate(R.layout.fragment_detalles_cuenta, container, false);
@@ -128,6 +133,9 @@ public class DetallesCuenta extends Fragment {
 
     private void AgregarDetalle(final DetalleDeOrden obj, final int position)
     {
+        if(!abierto)
+        {
+            abierto = true;
             //Abrimos la modal agregar el nuevo detalle de orden
             final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
             View view = getLayoutInflater().inflate(R.layout.detalle_cuenta, null);
@@ -140,6 +148,60 @@ public class DetallesCuenta extends Fragment {
             platillotxt.setText(obj.getNombreplatillo());
             cantidadtxt.setText(String.valueOf(obj.getCantidad()));
             txtcantidad.getEditText().setText("1");
+
+            //restar cantidad
+            txtcantidad.setStartIconOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if(!txtcantidad.getEditText().getText().toString().isEmpty())
+                    {
+                        int numero = Integer.valueOf(txtcantidad.getEditText().getText().toString());
+
+                        if(numero<=1)
+                        {
+                            txtcantidad.setError("La cantidad no puede ser menor a 1");
+                            return;
+                        }else
+                        {
+                            numero--;
+                            txtcantidad.getEditText().setText(String.valueOf(numero));
+                            txtcantidad.setError(null);
+                        }
+                    }
+                    else
+                    {
+                        txtcantidad.setError("Ingrese una cantidad");
+                    }
+                }
+            });
+
+            //sumar cantidad
+            txtcantidad.setEndIconOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if(!txtcantidad.getEditText().getText().toString().isEmpty())
+                    {
+                        int numero = Integer.valueOf(txtcantidad.getEditText().getText().toString());
+
+                        if(numero<obj.getCantidad())
+                        {
+                            numero++;
+                            txtcantidad.getEditText().setText(String.valueOf(numero));
+                            txtcantidad.setError(null);
+                        }
+                        else
+                        {
+                            txtcantidad.setError("La cantidad no puede ser mayor a la exitencia");
+                        }
+                    }
+                    else
+                    {
+                        txtcantidad.setError("Ingrese una cantidad");
+                    }
+                }
+            });
 
             btnagregar.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -166,6 +228,7 @@ public class DetallesCuenta extends Fragment {
                         {
                             //Agregar a una posicion especifica
                             MainActivity.listadetalles.get(groupPosition).add(detalleDeOrden);
+                            Toast.makeText(rootView.getContext(), "Agregado al cliente", Toast.LENGTH_SHORT).show();
                         }
 
                         //Actualizar la cantidad en la lista
@@ -206,6 +269,15 @@ public class DetallesCuenta extends Fragment {
             builder.setView(view);
             builder.create();
             builder.show();
+            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    abierto = false;
+                }
+            });
+
+        }
+
     }
 
 

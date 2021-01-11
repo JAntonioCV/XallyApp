@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".prueba">
+    tools:context="com.jantonioc.xalliapp.FragmentsOrdenes.Categorias">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe"
@@ -16,18 +15,18 @@
             android:layout_height="wrap_content">
 
             <RelativeLayout
-                android:id="@+id/relativeCategoria"
+                android:id="@+id/relativeMesas"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                 <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerViewCategoria"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewMesas"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
             </RelativeLayout>
 
         </androidx.core.widget.NestedScrollView>
-
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

@@ -3,20 +3,21 @@ package com.jantonioc.xalliapp.FragmentsOrdenes;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,6 +32,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jantonioc.ln.Categoria;
 import com.jantonioc.xalliapp.Adaptadores.CategoriaAdapter;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.R;
 import com.jantonioc.xalliapp.VolleySingleton;
 
@@ -39,7 +41,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,15 +50,20 @@ import static com.jantonioc.xalliapp.Constans.URLBASE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class Categorias extends Fragment implements CategoriaAdapter.Evento {
+public class Categorias extends Fragment implements CategoriaAdapter.Evento, SwipeRefreshLayout.OnRefreshListener {
 
     private View rootView;
     private RecyclerView lista;
     private List<Categoria> listacategorias;
-    private  ProgressBar progressBar;
     private CategoriaAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private SearchView searchView;
+
+    private RelativeLayout relativeLayout;
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+
+    private Button btnreintentar;
 
 
     public Categorias() {
@@ -114,10 +120,18 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
         toolbar.setTitle("Categoria");
 
         //Mostrnado el fab
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.show();
         //vista
         rootView = inflater.inflate(R.layout.fragment_categorias, container, false);
+
+        relativeLayout = rootView.findViewById(R.id.relativeCategoria);
+        noconection = rootView.findViewById(R.id.noconection);
+        relativeLayout.setVisibility(View.GONE);
+
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
+
         //RecyclerView
         lista = rootView.findViewById(R.id.recyclerViewCategoria);
         lista.setHasFixedSize(true);
@@ -126,20 +140,19 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
         //swipe to refresh
         swipeRefreshLayout = rootView.findViewById(R.id.swipe);
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                listaCategoria();
-                adapter.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Categorias.this.listaCategoria();
+                    }
+                });
             }
         });
-
-        progressBar = rootView.findViewById(R.id.progressBar);
-
-        //Haciendo visible el progresbarr
-        progressBar.setVisibility(View.VISIBLE);
 
         //Obteniendo la lista de las categorias
         listaCategoria();
@@ -154,6 +167,7 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
         //Guardando la id de la categoria
         Bundle bundle = new Bundle();
         bundle.putInt("IdCategoria", obj.getId());
+        bundle.putString("NombreCategoria",obj.getDescripcion());
 
         //Creando la intancia del nuevo fragment
         Fragment fragment = new Menus();
@@ -167,6 +181,12 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
     }
 
     private void listaCategoria() {
+
+        swipeRefreshLayout.setRefreshing(true);
+        fab.hide();
+        relativeLayout.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
+
         //Instancia de la lista
         listacategorias = new ArrayList<>();
 
@@ -189,7 +209,8 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
                                 obj.getInt("id"),
                                 obj.getString("codigo"),
                                 obj.getString("descripcion"),
-                                obj.getBoolean("estado")
+                                obj.getBoolean("estado"),
+                                obj.getBoolean("bar")
                         );
 
                         //despues agregamos a la lista
@@ -198,36 +219,56 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
 
                     //if la lista es mayor que 0 adapta la lista de los contario muestra un mensaje
                     if (listacategorias.size() > 0) {
-                        progressBar.setVisibility(View.GONE);
+
+                        swipeRefreshLayout.setRefreshing(false);
+                        relativeLayout.setVisibility(View.VISIBLE);
                         adapter = new CategoriaAdapter(listacategorias, Categorias.this);
                         lista.setAdapter(adapter);
+                        fab.show();
+
                     } else {
 
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(rootView.getContext(), "No existen Categorias para mostrar", Toast.LENGTH_SHORT).show();
+                        //abrir la pantalla principal home
+                        swipeRefreshLayout.setRefreshing(false);
+                        Toast.makeText(rootView.getContext(), "Esta categoria no posee productos", Toast.LENGTH_SHORT).show();
+
+                        FragmentManager fm = getActivity().getSupportFragmentManager();
+                        for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
+                            fm.popBackStack();
+                        }
+
+                        Fragment fragment = new Ordenes();
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.content, fragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+
                     }
 
                 } catch (JSONException ex) {
 
-                    progressBar.setVisibility(View.GONE);
+                    //excepcion json
+                    swipeRefreshLayout.setRefreshing(false);
+                    noconection.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
+
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
+                swipeRefreshLayout.setRefreshing(false);
+                noconection.setVisibility(View.VISIBLE);
+                Toast.makeText(rootView.getContext(), Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
             }
         })
         {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -235,4 +276,10 @@ public class Categorias extends Fragment implements CategoriaAdapter.Evento {
     }
 
 
+    @Override
+    public void onRefresh() {
+
+        listaCategoria();
+
+    }
 }

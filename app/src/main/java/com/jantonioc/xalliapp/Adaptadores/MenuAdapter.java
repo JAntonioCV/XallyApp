@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.jantonioc.ln.Menu;
+import com.jantonioc.xalliapp.Constans;
 import com.jantonioc.xalliapp.R;
 import com.squareup.picasso.Picasso;
 
@@ -149,7 +150,7 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.holder> implem
             TextView nombre =itemView.findViewById(R.id.itemnombre);
             TextView precio =itemView.findViewById(R.id.itemprecio);
 
-            String ruta = obj.getRuta();
+            String ruta = Constans.URLBASE + obj.getRuta();
 
             Picasso.with(itemView.getContext()).load(ruta).fit().centerCrop().into(imagen);
             nombre.setText(obj.getDescripcion());

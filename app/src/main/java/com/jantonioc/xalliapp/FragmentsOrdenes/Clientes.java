@@ -20,8 +20,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -31,6 +34,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.jantonioc.ln.Cliente;
@@ -55,16 +59,22 @@ import java.util.Map;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class Clientes extends Fragment {
+public class Clientes extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     //interfaz
     private View rootView;
     private RecyclerView lista;
     private List<Cliente> listaclientes;
-    private ProgressBar progressBar;
     private ClientesAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private SearchView searchView;
+
+    private RelativeLayout relativeLayout;
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+
+    private Button btnreintentar;
+
 
     public Clientes() {
         // Required empty public constructor
@@ -121,28 +131,38 @@ public class Clientes extends Fragment {
         toolbar.setTitle("Huespedes");
 
         //ocultando el fab
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.hide();
         //vista
         rootView = inflater.inflate(R.layout.fragment_clientes, container, false);
+
+        relativeLayout = rootView.findViewById(R.id.relativeCliente);
+        noconection = rootView.findViewById(R.id.noconection);
+        relativeLayout.setVisibility(View.GONE);
+
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
+
         //Recyclerview
         lista = rootView.findViewById(R.id.recyclerViewClientes);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
-        //progressbar
-        progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
 
         //swipe to refresh
         swipeRefreshLayout = rootView.findViewById(R.id.swipe);
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                listaCliente();
-                adapter.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        Clientes.this.listaCliente();
+                    }
+                });
             }
         });
 
@@ -157,6 +177,9 @@ public class Clientes extends Fragment {
     //obtener la lista de clientes del sistema
     private void listaCliente()
     {
+        swipeRefreshLayout.setRefreshing(true);
+        relativeLayout.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
         listaclientes = new ArrayList<>();
 
         String uri = Constans.URLBASE+"ClientesWS/Clientes";
@@ -188,24 +211,23 @@ public class Clientes extends Fragment {
                     //Si la lista es mayor que 0 adaptamos y hacemos el evento on click de la lista
                     if (listaclientes.size() > 0) {
 
-                        progressBar.setVisibility(View.GONE);
-
+                        swipeRefreshLayout.setRefreshing(false);
+                        relativeLayout.setVisibility(View.VISIBLE);
                         adapter = new ClientesAdapter(listaclientes);
-
                         adapter.setClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 //consultamos si el cliente tiene ordenes
-                                clienteConOrden(listaclientes.get(lista.getChildAdapterPosition(v)).getId());
+                                clienteConOrden(listaclientes.get(lista.getChildAdapterPosition(v)).getId(),listaclientes.get(lista.getChildAdapterPosition(v)).getNombre()+" "+listaclientes.get(lista.getChildAdapterPosition(v)).getApellido());
                             }
                         });
 
                         lista.setAdapter(adapter);
-
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
-                        progressBar.setVisibility(View.GONE);
+                        swipeRefreshLayout.setRefreshing(false);
+
                         Toast.makeText(rootView.getContext(), "No se encuentran clientes registrados", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -222,17 +244,20 @@ public class Clientes extends Fragment {
 
                 } catch (JSONException ex) {
 
-                    progressBar.setVisibility(View.GONE);
+                    //excepcion json
+                    swipeRefreshLayout.setRefreshing(false);
+                    noconection.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+
+                swipeRefreshLayout.setRefreshing(false);
+                noconection.setVisibility(View.VISIBLE);
+                Toast.makeText(rootView.getContext(), Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
         })
@@ -240,14 +265,14 @@ public class Clientes extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);
     }
 
-    public void clienteConOrden(final int id)
+    public void clienteConOrden(final int id, final String nombre)
     {
         String uri = Constans.URLBASE+"ClientesWS/ClienteConOrdenes/" + id;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, uri,null, new Response.Listener<JSONObject>() {
@@ -266,8 +291,10 @@ public class Clientes extends Fragment {
                     else
                     {
                         //abrir el fragment de las categorias
+
                         MainActivity.orden.setIdcliente(id);
-                        Fragment fragment = new Categorias();
+                        MainActivity.orden.setCliente(nombre);
+                        Fragment fragment = new Mesas();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
                         transaction.addToBackStack(null);
@@ -275,7 +302,6 @@ public class Clientes extends Fragment {
                     }
 
                 } catch (JSONException ex) {
-                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
@@ -283,14 +309,13 @@ public class Clientes extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+                Toast.makeText(rootView.getContext(), Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
             }
         }){
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -298,4 +323,8 @@ public class Clientes extends Fragment {
     }
 
 
+    @Override
+    public void onRefresh() {
+        listaCliente();
+    }
 }

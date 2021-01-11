@@ -1,13 +1,18 @@
 package com.jantonioc.xalliapp;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Base64;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -15,13 +20,18 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.jantonioc.ln.Comanda;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Orden;
+import com.jantonioc.ln.RespuestaLogin;
 import com.jantonioc.xalliapp.FragmentsCarnet.OrdenCarnet;
+import com.jantonioc.xalliapp.FragmentsCuenta.DetallesIguales;
+import com.jantonioc.xalliapp.FragmentsCuenta.ListaCuentas;
 import com.jantonioc.xalliapp.FragmentsFinalizar.OrdenFinalizar;
 import com.jantonioc.xalliapp.FragmentsOrdenes.DetalleOrden;
 import com.jantonioc.xalliapp.FragmentsOrdenes.Ordenes;
@@ -33,12 +43,16 @@ import com.jantonioc.xalliapp.Reportes.ReporteBarChart;
 import com.jantonioc.xalliapp.Reportes.ReportePieChart;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import static com.jantonioc.xalliapp.Constans.obtenerInstancia;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     //Fragmento para ser acceddido desde cualquier lugar de la clase
     Fragment fragment = null;
+    public static NavigationView navigationView;
 
     //lista para lod detallse de nueva orden y agregar orden
     public static List<DetalleDeOrden> listadetalle = new ArrayList<>();
@@ -56,6 +70,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //para que no se cierre al primer atras
     private static final int INTERVALO = 2000;
     private long tiempoPrimerClick;
+
+    public static boolean dashboard = false;
+    public static boolean cuenta = false;
+
+    public static final RespuestaLogin user = new RespuestaLogin();
+
+    //token
+    private static final HashMap<String,String> token = new HashMap<>();
+
+    //preferencias compartidas
+    private static EncryptedSharedPreferences sharedPreferences;
+    private static final String USER="user";
+    private static final String PASS="pass";
 
 
     @Override
@@ -119,27 +146,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
 
         View headerView = navigationView.getHeaderView(0);
         TextView nombre = headerView.findViewById(R.id.nav_nombre);
         TextView rol = headerView.findViewById(R.id.nav_rol);
-        nombre.setText(Constans.nombre);
-        rol.setText(Constans.rol);
+        nombre.setText(user.getNombreCompleto());
+        rol.setText(user.getRol());
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+
+        //navigationView.getMenu().getItem(0).getSubMenu().getItem(0).setChecked(true);
+        //navigationView.getMenu().getItem(0).getSubMenu().getItem(1).setChecked(true);
+
         navigationView.setNavigationItemSelectedListener(this);
 
+        //onNavigationItemSelected(navigationView.getMenu().getItem(0).getSubMenu().getItem(0));
+
         //Abrimos por defecto como primer interfaz el fragment ordenes
-        fragment = new prueba();
+        fragment = new Principal();
 
         //Cargamos el fragment
         cargarFragment(fragment);
-
-
     }
 
     @Override
@@ -150,13 +181,71 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             drawer.closeDrawer(GravityCompat.START);
         } else {
             if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-                super.onBackPressed();
+
+                if(cuenta)
+                {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                    builder.setTitle("Regresar");
+                    builder.setMessage("¿Realmente desea regresar a la pantalla anterior?");
+
+                    builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            cuenta = false;
+                            MainActivity.super.onBackPressed();
+                            return;
+                        }
+                    });
+
+                    //si lo cancela se vuelve el cardview
+                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //si lo cancela se cierra y vuelve el detalle eliminado por el swipe
+                            dialog.dismiss();
+                        }
+                    });
+
+                    builder.setCancelable(false);
+                    builder.create();
+                    builder.show();
+                }
+                else
+                {
+                    super.onBackPressed();
+                }
+
             } else {
                 if (tiempoPrimerClick + INTERVALO > System.currentTimeMillis()) {
-                    super.onBackPressed();
-                    return;
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                    builder.setTitle("Cerrar");
+                    builder.setMessage("¿Realmente desea cerrar la aplicación?");
+
+                    builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.super.onBackPressed();
+                            return;
+                        }
+                    });
+
+                    //si lo cancela se vuelve el cardview
+                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //si lo cancela se cierra y vuelve el detalle eliminado por el swipe
+                           dialog.dismiss();
+                        }
+                    });
+
+                    builder.setCancelable(false);
+                    builder.create();
+                    builder.show();
+
                 } else {
-                    Toast.makeText(this, "Vuelve a presionar para salir", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Vuelva a presionar para salir", Toast.LENGTH_SHORT).show();
                 }
                 tiempoPrimerClick = System.currentTimeMillis();
             }
@@ -195,68 +284,55 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Cargando los fragment dependiendo de su id y la seleccion
         fragment = null;
 
+        //limpiamos los auxiliares
+        MainActivity.listadetalle.clear();
+        MainActivity.orden = new Orden();
+        MainActivity.modpedidos = false;
+        MainActivity.cuenta = false;
+
+        if(dashboard)
+        {
+            desmarcar(item);
+        }
+
         switch (item.getItemId()) {
+
+
+
             case R.id.nav_menu:
                 //abrir nueva orden
                 fragment = new Ordenes();
-                //limpiamos los auxiliares
-                MainActivity.listadetalle.clear();
-                MainActivity.orden = new Orden();
-                MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_comanda:
                 //abrir lista clientes para la comanda
                 fragment = new ClientesComanda();
-                //limpiamos los auxiliares
-                MainActivity.listadetalle.clear();
-                MainActivity.orden = new Orden();
-                MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_pedidos:
                 //abrir los pedidos
                 fragment = new Pedidos();
-                //limpiamos los auxiliares
-                MainActivity.listadetalle.clear();
-                MainActivity.orden = new Orden();
-                MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_dividir:
                 //abrimos dividir cuenta
                 fragment = new PedidosCuenta();
-                MainActivity.listadetalle.clear();
-                MainActivity.orden = new Orden();
-                MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_finalizar:
                 fragment = new OrdenFinalizar();
-                MainActivity.listadetalle.clear();
-                MainActivity.orden = new Orden();
-                MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_cdiplomatico:
                 fragment = new OrdenCarnet();
-                MainActivity.listadetalle.clear();
-                MainActivity.orden = new Orden();
-                MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_repor1:
                 fragment = new ReportePieChart();
-                MainActivity.listadetalle.clear();
-                MainActivity.orden = new Orden();
-                MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_repor2:
                 fragment = new ReporteBarChart();
-                MainActivity.listadetalle.clear();
-                MainActivity.orden = new Orden();
-                MainActivity.modpedidos = false;
                 break;
 
             case R.id.nav_salir:
@@ -278,6 +354,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             drawer.closeDrawer(GravityCompat.START);
             return true;
         }
+
     }
 
 
@@ -326,5 +403,51 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    public static void setToken(Context context) {
+
+        String usser,pass;
+        sharedPreferences = obtenerInstancia(context);
+
+        usser = sharedPreferences.getString(USER, "");
+        pass = sharedPreferences.getString(PASS, "");
+
+        String creds = String.format("%s:%s",usser,pass);
+        String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.NO_WRAP);
+
+        token.put("Authorization",auth);
+    }
+
+    public static HashMap<String, String> getToken() {
+        return token;
+    }
+
+    public static String getTokenR() {
+        if(token.get("Authorization") == null)
+        {
+            return "";
+        }
+        return token.get("Authorization");
+    }
+
+    public void desmarcar(MenuItem menuItem)
+    {
+        int menu = navigationView.getMenu().size();
+
+        for (int  i = 0 ; i < menu-1 ; i++)
+        {
+            int submenu = navigationView.getMenu().getItem(i).getSubMenu().size();
+
+            for (int  j = 0 ; j <= submenu-1 ; j++)
+            {
+                if(navigationView.getMenu().getItem(i).getSubMenu().getItem(j) != menuItem && navigationView.getMenu().getItem(i).getSubMenu().getItem(j).isChecked())
+                {
+                    navigationView.getMenu().getItem(i).getSubMenu().getItem(j).setChecked(false);
+                    dashboard = false;
+                    return;
+                }
+            }
+
+        }
+    }
 
 }

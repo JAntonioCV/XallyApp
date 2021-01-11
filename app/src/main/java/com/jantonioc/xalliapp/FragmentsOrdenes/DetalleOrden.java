@@ -74,9 +74,12 @@ public class DetalleOrden extends Fragment {
     private Button ordenar;
 
     int cantidad;
+    String mensaje;
 
     private Button btnenviar;
     private TextView total;
+
+    boolean abierto = false;
 
 
     public DetalleOrden() {
@@ -123,7 +126,50 @@ public class DetalleOrden extends Fragment {
                     //validando que la lista no este vacia al enviar
                     if (MainActivity.listadetalle.size() > 0) {
                         //envia la orden
-                        enviarOrden(MainActivity.listadetalle, MainActivity.orden);
+                        if(!abierto)
+                        {
+                            abierto = true;
+                            //Abrimos la modal agregar el nuevo detalle de orden
+                            final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
+
+                            View view = getLayoutInflater().inflate(R.layout.vistaprevia, null);
+
+                            TextView mesa = view.findViewById(R.id.itemmesa);
+                            TextView codigo = view.findViewById(R.id.itemcodigo);
+                            TextView fecha = view.findViewById(R.id.itemfecha);
+                            TextView tiempo = view.findViewById(R.id.itemhora);
+                            TextView estado = view.findViewById(R.id.itemestado);
+                            TextView cliente = view.findViewById(R.id.itemcliente);
+                            TextView mesero = view.findViewById(R.id.itemmesero);
+
+                            Button btnconfirmar = view.findViewById(R.id.btnconfirmar);
+
+                            mesa.setText(MainActivity.orden.getMesa());
+                            codigo.setText("Codigo: " + MainActivity.orden.getCodigo());
+                            fecha.setText("Fecha: " + MainActivity.orden.getFechaorden());
+                            tiempo.setText("Hora: " + MainActivity.orden.getTiempoorden());
+                            estado.setText("Estado: " + "Sin enviar");
+                            cliente.setText("Cliente: " + MainActivity.orden.getCliente());
+                            mesero.setText("Mesero: " + MainActivity.user.getNombreCompleto());
+
+                            btnconfirmar.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    builder.cancel();
+                                    enviarOrden(MainActivity.listadetalle, MainActivity.orden);
+                                }
+                            });
+
+                            builder.setView(view);
+                            builder.create();
+                            builder.show();
+                            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    abierto = false;
+                                }
+                            });
+                        }
 
                     } else {
                         //eror por que el detalle esta vacio
@@ -208,7 +254,7 @@ public class DetalleOrden extends Fragment {
     }
 
     //Validando si se modifica la orden o se agrega una nueva || aqui deberia mostrar lo que ya tengo que podria ser modificado
-    private void modificardetalle(final DetalleDeOrden detalleDeOrden, final int cantidad, final int position) {
+    private void modificardetalle(final DetalleDeOrden detalleDeOrden, final int cantidad, final int position, String mensaje) {
 
         //recorre la lista para modificare
         for (final DetalleDeOrden detalleActual : MainActivity.listadetalle) {
@@ -247,6 +293,39 @@ public class DetalleOrden extends Fragment {
                     builder.show();
                     break;
 
+                }else if (cantidad == -1)
+                {
+                    //Mostrar un dialog
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+                    //si elimina
+                    builder.setTitle("Eliminar Detalle");
+                    builder.setMessage("Uno de los ingredientes no posee existencia ¿Desea eliminar el detalle?");
+
+                    builder.setPositiveButton("Eliminar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //Si confirma se borra de la lista del detalle y se calcula el total
+                            Toast.makeText(rootView.getContext(), "Eliminado de la Orden", Toast.LENGTH_SHORT).show();
+                            MainActivity.listadetalle.remove(position);
+                            total.setText("$" + calcularTotal(MainActivity.listadetalle));
+                            adapter.notifyDataSetChanged();
+
+                        }
+                    });
+
+                    //si cancela
+                    builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //si lo cancela se cierra y vuelve el detalle eliminado por el swipe
+                            adapter.notifyItemChanged(position);
+                        }
+                    });
+
+                    builder.create();
+                    builder.show();
+                    break;
                 }
                 //si es menor a lo pedido y diferente de -2
                 else if(cantidad < detalleActual.getCantidad() && cantidad != -2)
@@ -280,119 +359,133 @@ public class DetalleOrden extends Fragment {
                     builder.show();
                     break;
                 } else {
-                    // de lo contrario podemos agregar o disminuir o modificar
-                    final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
-                    //dialog
-                    View view = getLayoutInflater().inflate(R.layout.detalle_orden, null);
-                    txtplatillo = view.findViewById(R.id.nombreplatillo);
-                    txtexistencia = view.findViewById(R.id.existencia);
-                    txtcantidad = view.findViewById(R.id.cantidad);
-                    txtnota = view.findViewById(R.id.notaopcional);
-                    ordenar = view.findViewById(R.id.btnordenar);
+                    if(!abierto)
+                    {
+                        abierto = true;
+                        // de lo contrario podemos agregar o disminuir o modificar
+                        final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
-                    //restar la cantidad
-                    txtcantidad.setStartIconOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
+                        //dialog
+                        View view = getLayoutInflater().inflate(R.layout.detalle_orden, null);
+                        txtplatillo = view.findViewById(R.id.nombreplatillo);
+                        txtexistencia = view.findViewById(R.id.existencia);
+                        txtcantidad = view.findViewById(R.id.cantidad);
+                        txtnota = view.findViewById(R.id.notaopcional);
+                        ordenar = view.findViewById(R.id.btnordenar);
 
-                            if(!txtcantidad.getEditText().getText().toString().isEmpty())
-                            {
-                                int numero = Integer.valueOf(txtcantidad.getEditText().getText().toString());
+                        //restar la cantidad
+                        txtcantidad.setStartIconOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
 
-                                if(numero<=1)
+                                if(!txtcantidad.getEditText().getText().toString().isEmpty())
                                 {
-                                    txtcantidad.setError("La cantidad no puede ser menor a 1");
-                                    return;
-                                }else
-                                {
-                                    numero--;
-                                    txtcantidad.getEditText().setText(String.valueOf(numero));
-                                    txtcantidad.setError(null);
-                                }
-                            }
-                            else
-                            {
-                                txtcantidad.setError("Ingrese una cantidad");
-                            }
+                                    int numero = Integer.valueOf(txtcantidad.getEditText().getText().toString());
 
-                        }
-                    });
-
-                    //sumar la cantidad
-                    txtcantidad.setEndIconOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-
-                            if(!txtcantidad.getEditText().getText().toString().isEmpty())
-                            {
-                                int numero = Integer.valueOf(txtcantidad.getEditText().getText().toString());
-                                if(cantidad==-2)
-                                {
-                                    numero++;
-                                    txtcantidad.getEditText().setText(String.valueOf(numero));
-                                    txtcantidad.setError(null);
-                                }
-                                else if(numero < cantidad)
-                                {
-                                    numero++;
-                                    txtcantidad.getEditText().setText(String.valueOf(numero));
-                                    txtcantidad.setError(null);
+                                    if(numero<=1)
+                                    {
+                                        txtcantidad.setError("La cantidad no puede ser menor a 1");
+                                        return;
+                                    }else
+                                    {
+                                        numero--;
+                                        txtcantidad.getEditText().setText(String.valueOf(numero));
+                                        txtcantidad.setError(null);
+                                    }
                                 }
                                 else
                                 {
-                                    txtcantidad.setError("La cantidad no puede ser mayor a la exitencia");
+                                    txtcantidad.setError("Ingrese una cantidad");
+                                }
+
+                            }
+                        });
+
+                        //sumar la cantidad
+                        txtcantidad.setEndIconOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+                                if(!txtcantidad.getEditText().getText().toString().isEmpty())
+                                {
+                                    int numero = Integer.valueOf(txtcantidad.getEditText().getText().toString());
+                                    if(cantidad==-2)
+                                    {
+                                        numero++;
+                                        txtcantidad.getEditText().setText(String.valueOf(numero));
+                                        txtcantidad.setError(null);
+                                    }
+                                    else if(numero < cantidad)
+                                    {
+                                        numero++;
+                                        txtcantidad.getEditText().setText(String.valueOf(numero));
+                                        txtcantidad.setError(null);
+                                    }
+                                    else
+                                    {
+                                        txtcantidad.setError("La cantidad no puede ser mayor a la exitencia");
+                                    }
+                                }
+                                else
+                                {
+                                    txtcantidad.setError("Ingrese una cantidad");
                                 }
                             }
-                            else
-                            {
-                                txtcantidad.setError("Ingrese una cantidad");
-                            }
-                        }
-                    });
+                        });
 
-                    //si el inventario o no inventriado
-                    if (cantidad == -2) {
-                        txtexistencia.setText("Existencia: No inventariado");
-                    } else {
-                        txtexistencia.setText("Existencia: " + String.valueOf(cantidad));
+                        //si el inventario o no inventriado
+                        if (cantidad == -2) {
+                            txtexistencia.setText("Existencia: " + mensaje);
+                        } else {
+                            txtexistencia.setText("Existencia: " + String.valueOf(cantidad));
+                        }
+
+                        //obteniendo la info
+                        txtcantidad.getEditText().setText(String.valueOf(detalleActual.getCantidad()));
+                        txtnota.getEditText().setText(detalleActual.getNota());
+                        txtplatillo.setText(detalleActual.getNombreplatillo());
+                        ordenar.setText("MODIFICAR");
+
+                        //evento click
+                        ordenar.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                //si los campos son validos
+                                if (!validarCampos(cantidad)) {
+                                    return;
+                                } else {
+                                    //si no hay cambios toast
+                                    if (detalleActual.getCantidad() == Integer.valueOf(txtcantidad.getEditText().getText().toString()) && detalleActual.getNota().equals(txtnota.getEditText().getText().toString())) {
+                                        Toast.makeText(rootView.getContext(), "No existen cambios para guardar", Toast.LENGTH_SHORT).show();
+                                    }
+                                    else
+                                    {
+                                        //guardamos las modificaciones
+                                        detalleActual.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
+                                        detalleActual.setNota(txtnota.getEditText().getText().toString());
+                                        Toast.makeText(rootView.getContext(), "Detalle de orden modificado", Toast.LENGTH_SHORT).show();
+                                        total.setText("$" + calcularTotal(MainActivity.listadetalle));
+                                        adapter.notifyDataSetChanged();
+                                        builder.cancel();
+                                    }
+                                }
+                            }
+                        });
+
+                        builder.setView(view);
+                        builder.create();
+                        builder.show();
+                        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                abierto = false;
+                            }
+                        });
+
+                        break;
                     }
 
-                    //obteniendo la info
-                    txtcantidad.getEditText().setText(String.valueOf(detalleActual.getCantidad()));
-                    txtnota.getEditText().setText(detalleActual.getNota());
-                    txtplatillo.setText(detalleActual.getNombreplatillo());
-                    ordenar.setText("MODIFICAR");
-
-                    //evento click
-                    ordenar.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            //si los campos son validos
-                            if (!validarCampos(cantidad)) {
-                                return;
-                            } else {
-                                //si no hay cambios toast
-                                if (detalleActual.getCantidad() == Integer.valueOf(txtcantidad.getEditText().getText().toString()) && detalleActual.getNota().equals(txtnota.getEditText().getText().toString())) {
-                                    Toast.makeText(rootView.getContext(), "No existen cambios para guardar", Toast.LENGTH_SHORT).show();
-                                }
-                                else
-                                {
-                                    //guardamos las modificaciones
-                                    detalleActual.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
-                                    detalleActual.setNota(txtnota.getEditText().getText().toString());
-                                    total.setText("$" + calcularTotal(MainActivity.listadetalle));
-                                    adapter.notifyDataSetChanged();
-                                    builder.cancel();
-                                }
-                            }
-                        }
-                    });
-
-                    builder.setView(view);
-                    builder.create();
-                    builder.show();
-                    break;
                 }
             }
         }
@@ -426,8 +519,9 @@ public class DetalleOrden extends Fragment {
             ordenObject.put("fechaorden", orden.getFechaorden());
             ordenObject.put("tiempoorden", orden.getTiempoorden());
             ordenObject.put("estado", orden.getEstado());
-            ordenObject.put("meseroid",1);
+            ordenObject.put("meseroid",MainActivity.user.getId());
             ordenObject.put("clienteid",orden.getIdcliente());
+            ordenObject.put("mesaid",orden.getIdmesa());
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -445,7 +539,7 @@ public class DetalleOrden extends Fragment {
 
                 //Guardando datos del detalle de orden
                 detallesordenes.put("cantidadorden", detalleActual.getCantidad());
-                detallesordenes.put("notaorden", detalleActual.getNota().isEmpty() ? "Sin nota" : detalleActual.getNota());
+                detallesordenes.put("notaorden", detalleActual.getNota().isEmpty() ? "" : detalleActual.getNota());
                 detallesordenes.put("nombreplatillo", detalleActual.getNombreplatillo());
                 detallesordenes.put("preciounitario", detalleActual.getPrecio());
                 detallesordenes.put("estado", detalleActual.getEstado());
@@ -525,7 +619,7 @@ public class DetalleOrden extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -558,15 +652,23 @@ public class DetalleOrden extends Fragment {
 
     //Obtener la existencia de un producto de el bar
     private void Obtenerexitencia(final DetalleDeOrden detalleDeOrden, final int position) {
-        String uri = URLBASE+"InventarioWS/Existencia/" + detalleDeOrden.getMenuid();
+        String uri = URLBASE+"InventarioWS/existencia/" + detalleDeOrden.getMenuid();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+                try {
 
-                cantidad = Integer.valueOf(response);
-                modificardetalle(detalleDeOrden, cantidad, position);
+                    JSONObject jsonObject = new JSONObject(response);
+
+                    mensaje = jsonObject.getString("mensaje");
+                    cantidad = jsonObject.getInt("existencia");
+
+                    modificardetalle(detalleDeOrden, cantidad, position, mensaje);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
-
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
@@ -578,7 +680,7 @@ public class DetalleOrden extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
         VolleySingleton.getInstance(rootView.getContext()).addToRequestQueue(request);

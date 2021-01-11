@@ -15,7 +15,10 @@ import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -24,10 +27,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.jantonioc.ln.Cliente;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.FragmentsOrdenes.Clientes;
 import com.jantonioc.xalliapp.FragmentsOrdenes.Ordenes;
 import com.jantonioc.xalliapp.MainActivity;
+import com.jantonioc.xalliapp.Principal;
 import com.jantonioc.xalliapp.VolleySingleton;
 import com.jantonioc.xalliapp.Adaptadores.ClientesAdapter;
 import com.jantonioc.xalliapp.R;
@@ -41,17 +47,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.jantonioc.xalliapp.MainActivity.navigationView;
+
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ClientesComanda extends Fragment {
+public class ClientesComanda extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     private View rootView;
     private RecyclerView lista;
     private List<Cliente> listaclientes;
-    private ProgressBar progressBar;
     private ClientesAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
+
+    private RelativeLayout relativeLayout;
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+
+    private Button btnreintentar;
 
 
 
@@ -69,29 +82,40 @@ public class ClientesComanda extends Fragment {
         toolbar.setTitle("Huespedes");
 
         //ocultando el fab
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
         //vista
         rootView = inflater.inflate(R.layout.fragment_clientes, container, false);
+
+        relativeLayout = rootView.findViewById(R.id.relativeCliente);
+        noconection = rootView.findViewById(R.id.noconection);
+        relativeLayout.setVisibility(View.GONE);
+
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
+
         //Recyclerview
         lista = rootView.findViewById(R.id.recyclerViewClientes);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
-        //progressbar
-        progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
+
 
         //swipe to refresh
         swipeRefreshLayout = rootView.findViewById(R.id.swipe);
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                listaCliente();
-                adapter.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        ClientesComanda.this.listaCliente();
+                    }
+                });
             }
         });
 
@@ -103,6 +127,9 @@ public class ClientesComanda extends Fragment {
     //obtener la lista de clientes del sistema
     private void listaCliente()
     {
+        swipeRefreshLayout.setRefreshing(true);
+        relativeLayout.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
         listaclientes = new ArrayList<>();
 
         String uri = Constans.URLBASE+"ClientesWS/ClientesConComanda";
@@ -134,8 +161,8 @@ public class ClientesComanda extends Fragment {
                     //Si la lista es mayor que 0 adaptamos y hacemos el evento on click de la lista
                     if (listaclientes.size() > 0) {
 
-                        progressBar.setVisibility(View.GONE);
-
+                        swipeRefreshLayout.setRefreshing(false);
+                        relativeLayout.setVisibility(View.VISIBLE);
                         adapter = new ClientesAdapter(listaclientes);
 
                         adapter.setClickListener(new View.OnClickListener() {
@@ -159,8 +186,9 @@ public class ClientesComanda extends Fragment {
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
+                        navigationView.getMenu().getItem(1).getSubMenu().getItem(0).setChecked(false);
                         //aun tengo que poner uno por defecto de bienvenida
-                        progressBar.setVisibility(View.GONE);
+                        swipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(rootView.getContext(), "No se encuentran clientes con ordenes sin pagar", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -168,7 +196,7 @@ public class ClientesComanda extends Fragment {
                             fm.popBackStack();
                         }
 
-                        Fragment fragment = new Ordenes();
+                        Fragment fragment = new Principal();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.add(R.id.content, fragment);
                         transaction.commit();
@@ -176,16 +204,19 @@ public class ClientesComanda extends Fragment {
 
                 } catch (JSONException ex) {
 
-                    progressBar.setVisibility(View.GONE);
+                    //excepcion json
+                    swipeRefreshLayout.setRefreshing(false);
+                    noconection.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
+
+                swipeRefreshLayout.setRefreshing(false);
+                noconection.setVisibility(View.VISIBLE);
                 Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
@@ -194,7 +225,7 @@ public class ClientesComanda extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -203,4 +234,8 @@ public class ClientesComanda extends Fragment {
 
     }
 
+    @Override
+    public void onRefresh() {
+        listaCliente();
+    }
 }

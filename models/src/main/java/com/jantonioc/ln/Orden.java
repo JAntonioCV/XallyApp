@@ -11,13 +11,15 @@ public class Orden implements Serializable {
     private int estado;
     private int idcliente;
     private int idmesero;
+    private int idmesa;
     private String cliente;
     private String mesero;
+    private String mesa;
 
     public Orden() {
     }
 
-    public Orden(int id, int codigo, String fechaorden, String tiempoorden, int estado, int idcliente, int idmesero, String cliente, String mesero) {
+    public Orden(int id, int codigo, String fechaorden, String tiempoorden, int estado, int idcliente, int idmesero, int idmesa, String cliente, String mesero, String mesa) {
         this.id = id;
         this.codigo = codigo;
         this.fechaorden = fechaorden;
@@ -25,8 +27,10 @@ public class Orden implements Serializable {
         this.estado = estado;
         this.idcliente = idcliente;
         this.idmesero = idmesero;
+        this.idmesa = idmesa;
         this.cliente = cliente;
         this.mesero = mesero;
+        this.mesa = mesa;
     }
 
     public int getId() {
@@ -85,6 +89,14 @@ public class Orden implements Serializable {
         this.idmesero = idmesero;
     }
 
+    public int getIdmesa() {
+        return idmesa;
+    }
+
+    public void setIdmesa(int idmesa) {
+        this.idmesa = idmesa;
+    }
+
     public String getCliente() {
         return cliente;
     }
@@ -99,6 +111,14 @@ public class Orden implements Serializable {
 
     public void setMesero(String mesero) {
         this.mesero = mesero;
+    }
+
+    public String getMesa() {
+        return mesa;
+    }
+
+    public void setMesa(String mesa) {
+        this.mesa = mesa;
     }
 }
 

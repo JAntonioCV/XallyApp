@@ -12,39 +12,60 @@
     app:cardUseCompatPadding="true"
     tools:ignore="Overdraw">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/itemidentificacion"
-            android:text="Identificacion"
+        <ImageView
+            android:id="@+id/cardPerfil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="center"
+            android:padding="5dp"
+            android:layout_centerInParent="true"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/ic_person" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="start"
-            android:maxLines="1"
-            android:layout_gravity="center"
-            android:textStyle="bold"
-            android:layout_margin="1.6dp"
-            style="@style/TextAppearance.AppCompat.Medium"
-            android:textAppearance="?android:attr/textAppearanceListItem" />
+            android:orientation="vertical"
+            android:layout_centerInParent="true"
+            android:layout_toEndOf="@id/cardPerfil"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/itemcliente"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Nombre"
-            android:gravity="start"
-            android:maxLines="1"
-            android:layout_gravity="center"
-            android:textStyle="bold"
-            android:layout_margin="1.6dp"
-            style="@style/TextAppearance.AppCompat.Medium"
-            android:textAppearance="?android:attr/textAppearanceListItem" />
+            <TextView
+                android:id="@+id/itemidentificacion"
+                android:text="Identificacion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:maxLines="1"
+                android:layout_gravity="center"
+                android:textStyle="bold"
+                android:layout_margin="1.6dp"
+                style="@style/TextAppearance.AppCompat.Medium"
+                android:textAppearance="?android:attr/textAppearanceListItem" />
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/itemcliente"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nombre"
+                android:gravity="start"
+                android:maxLines="1"
+                android:layout_gravity="center"
+                android:textStyle="bold"
+                android:layout_margin="1.6dp"
+                style="@style/TextAppearance.AppCompat.Medium"
+                android:textAppearance="?android:attr/textAppearanceListItem" />
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+
 
 
 </androidx.cardview.widget.CardView>

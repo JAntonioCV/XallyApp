@@ -1,6 +1,7 @@
 package com.jantonioc.xalliapp.Adaptadores;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.xalliapp.FragmentsCuenta.DetallesCuenta;
+import com.jantonioc.xalliapp.FragmentsCuenta.IObserverItem;
 import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.R;
 
@@ -40,7 +42,11 @@ public class CuentasAdapter extends BaseExpandableListAdapter {
 
     private Button btneliminar;
 
+    public static IObserverItem itemTamaño;
+
     double total=0;
+
+    private boolean abierto = false;
 
     public CuentasAdapter(Context context, List<String> listaclientes, HashMap<String, List<DetalleDeOrden>> detallesDeOrden) {
         this.context = context;
@@ -193,72 +199,140 @@ public class CuentasAdapter extends BaseExpandableListAdapter {
 
     private void eliminar(final DetalleDeOrden obj, final int gposition, final int cposition)
     {
-        //Abrimos la modal agregar el nuevo detalle de orden
-        final AlertDialog builder = new AlertDialog.Builder(context).create();
+        if(!abierto)
+        {
+            abierto = true;
+            //Abrimos la modal agregar el nuevo detalle de orden
+            final AlertDialog builder = new AlertDialog.Builder(context).create();
 
-        LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        View view =  layoutInflater.inflate(R.layout.detalle_cuenta, null);
+            View view =  layoutInflater.inflate(R.layout.detalle_cuenta, null);
 
-        platillotxt = view.findViewById(R.id.nombreplatillo);
-        cantidadtxt = view.findViewById(R.id.cantidadpedido);
-        txtcantidad = view.findViewById(R.id.cantidad);
-        btneliminar = view.findViewById(R.id.btnagregar);
-        titulotxt = view.findViewById(R.id.textView2);
+            platillotxt = view.findViewById(R.id.nombreplatillo);
+            cantidadtxt = view.findViewById(R.id.cantidadpedido);
+            txtcantidad = view.findViewById(R.id.cantidad);
+            btneliminar = view.findViewById(R.id.btnagregar);
+            titulotxt = view.findViewById(R.id.textView2);
 
 
-        titulotxt.setText("Eliminar del cliente");
-        platillotxt.setText(obj.getNombreplatillo());
-        cantidadtxt.setText(String.valueOf(obj.getCantidad()));
-        txtcantidad.getEditText().setText("1");
-        btneliminar.setText("Eliminar");
+            titulotxt.setText("Eliminar del cliente");
+            platillotxt.setText(obj.getNombreplatillo());
+            cantidadtxt.setText(String.valueOf(obj.getCantidad()));
+            txtcantidad.getEditText().setText("1");
+            btneliminar.setText("Eliminar");
 
-        btneliminar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            //restar cantidad
+            txtcantidad.setStartIconOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-                if(!validarCampos())
-                {
-                    return;
-                }
-                else
-                {
-                    DetalleDeOrden detalleDeOrden= new DetalleDeOrden();
-
-                    detalleDeOrden.setMenuid(MainActivity.listadetalles.get(gposition).get(cposition).getMenuid());
-                    detalleDeOrden.setPrecio(MainActivity.listadetalles.get(gposition).get(cposition).getPrecio());
-                    detalleDeOrden.setNombreplatillo(MainActivity.listadetalles.get(gposition).get(cposition).getNombreplatillo());
-                    detalleDeOrden.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
-
-                    if(yaExiste(detalleDeOrden,gposition))
+                    if(!txtcantidad.getEditText().getText().toString().isEmpty())
                     {
-                        Toast.makeText(context, "Cantidad Actualizada", Toast.LENGTH_SHORT).show();
+                        int numero = Integer.valueOf(txtcantidad.getEditText().getText().toString());
+
+                        if(numero<=1)
+                        {
+                            txtcantidad.setError("La cantidad no puede ser menor a 1");
+                            return;
+                        }else
+                        {
+                            numero--;
+                            txtcantidad.getEditText().setText(String.valueOf(numero));
+                            txtcantidad.setError(null);
+                        }
                     }
                     else
                     {
-                        MainActivity.listadetalle.add(detalleDeOrden);
+                        txtcantidad.setError("Ingrese una cantidad");
                     }
+                }
+            });
 
-                    MainActivity.listadetalles.get(gposition).get(cposition).setCantidad(MainActivity.listadetalles.get(gposition).get(cposition).getCantidad()-Integer.valueOf(txtcantidad.getEditText().getText().toString()));
+            //sumar cantidad
+            txtcantidad.setEndIconOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-                    if(MainActivity.listadetalles.get(gposition).get(cposition).getCantidad()==0)
+                    if(!txtcantidad.getEditText().getText().toString().isEmpty())
                     {
-                        //remover el item de la lista
-                        MainActivity.listadetalles.get(gposition).remove(cposition);
+                        int numero = Integer.valueOf(txtcantidad.getEditText().getText().toString());
+
+                        if(numero<obj.getCantidad())
+                        {
+                            numero++;
+                            txtcantidad.getEditText().setText(String.valueOf(numero));
+                            txtcantidad.setError(null);
+                        }
+                        else
+                        {
+                            txtcantidad.setError("La cantidad no puede ser mayor a la exitencia");
+                        }
+                    }
+                    else
+                    {
+                        txtcantidad.setError("Ingrese una cantidad");
+                    }
+                }
+            });
+
+            btneliminar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if(!validarCampos())
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        DetalleDeOrden detalleDeOrden= new DetalleDeOrden();
+
+                        detalleDeOrden.setMenuid(MainActivity.listadetalles.get(gposition).get(cposition).getMenuid());
+                        detalleDeOrden.setPrecio(MainActivity.listadetalles.get(gposition).get(cposition).getPrecio());
+                        detalleDeOrden.setNombreplatillo(MainActivity.listadetalles.get(gposition).get(cposition).getNombreplatillo());
+                        detalleDeOrden.setCantidad(Integer.valueOf(txtcantidad.getEditText().getText().toString()));
+
+                        if(!yaExiste(detalleDeOrden,gposition))
+                        {
+                            MainActivity.listadetalle.add(detalleDeOrden);
+                        }
+
+                        MainActivity.listadetalles.get(gposition).get(cposition).setCantidad(MainActivity.listadetalles.get(gposition).get(cposition).getCantidad()-Integer.valueOf(txtcantidad.getEditText().getText().toString()));
+
+                        if(MainActivity.listadetalles.get(gposition).get(cposition).getCantidad()==0)
+                        {
+                            //remover el item de la lista
+                            Toast.makeText(context, "Eliminado del cliente", Toast.LENGTH_SHORT).show();
+                            MainActivity.listadetalles.get(gposition).remove(cposition);
+                            itemTamaño.tamaño(MainActivity.listadetalle.size());
+                        }
+                        else
+                        {
+                            Toast.makeText(context, "Eliminado del cliente", Toast.LENGTH_SHORT).show();
+                        }
+
+                        notifyDataSetChanged();
+
+                        builder.cancel();
                     }
 
-                    notifyDataSetChanged();
-
-                    builder.cancel();
                 }
 
-            }
+            });
 
-        });
+            builder.setView(view);
+            builder.create();
+            builder.show();
+            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    abierto = false;
+                }
+            });
+        }
 
-        builder.setView(view);
-        builder.create();
-        builder.show();
+
 
     }
 

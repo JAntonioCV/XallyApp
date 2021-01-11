@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +18,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -24,8 +26,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.FragmentsPedidos.DetallesDeOrden;
+import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.VolleySingleton;
 import com.jantonioc.xalliapp.Adaptadores.DetalleOrdenAdapter;
 import com.jantonioc.xalliapp.FragmentsComanda.OrdenComanda;
@@ -44,7 +49,7 @@ import java.util.Map;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DetallesOrdenIguales extends Fragment {
+public class DetallesOrdenIguales extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     //interfaz
     private View rootView;
@@ -62,6 +67,17 @@ public class DetallesOrdenIguales extends Fragment {
     private int cantidad;
 
 
+    //swipe to refresh
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private RelativeLayout relativeLayout;
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+
+    private Button btnreintentar;
+    private TextView txterror;
+
+
     public DetallesOrdenIguales() {
         // Required empty public constructor
     }
@@ -76,11 +92,19 @@ public class DetallesOrdenIguales extends Fragment {
         toolbar.setTitle("Detalle Ordenes");
 
         //fab boton
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_detalles_de_orden, container, false);
+
+        relativeLayout = rootView.findViewById(R.id.relative);
+        noconection = rootView.findViewById(R.id.noconection);
+        relativeLayout.setVisibility(View.GONE);
+
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
+        txterror = rootView.findViewById(R.id.errorTitle);
 
         lista = rootView.findViewById(R.id.recyclerViewDetalleOrden);
         lista.setHasFixedSize(true);
@@ -88,7 +112,7 @@ public class DetallesOrdenIguales extends Fragment {
 
         //progressbar
         progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
 
         total = rootView.findViewById(R.id.total);
 
@@ -101,6 +125,10 @@ public class DetallesOrdenIguales extends Fragment {
             @Override
             public void onClick(View v) {
 
+                progressBar.setVisibility(View.VISIBLE);
+                relativeLayout.setVisibility(View.GONE);
+                lista.setVisibility(View.GONE);
+
                 String aporte = calcularAporte();
 
                 Fragment fragment = new DetallesIguales();
@@ -109,16 +137,34 @@ public class DetallesOrdenIguales extends Fragment {
                 bundle.putInt("cantidad",cantidad);
                 fragment.setArguments(bundle);
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.content, fragment);
+                transaction.replace(R.id.content, fragment,"DetallesIguales");
                 transaction.addToBackStack(null);
                 transaction.commit();
             }
         });
 
+        //swipe to refresh
+        swipeRefreshLayout = rootView.findViewById(R.id.swipe);
+        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
+        swipeRefreshLayout.setOnRefreshListener(this);
+
         //obteniendo el id de la orden selecionada
         Bundle bundle = getArguments();
-        int idorden = bundle.getInt("idOrden",0);
+        idorden = bundle.getInt("idOrden",0);
         cantidad = bundle.getInt("cantidad",0);
+
+
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        DetallesOrdenIguales.this.obtenerDetalles(idorden);
+                    }
+                });
+            }
+        });
 
         //obtenemos los detalles
         obtenerDetalles(idorden);
@@ -128,6 +174,11 @@ public class DetallesOrdenIguales extends Fragment {
     }
 
     private void obtenerDetalles(int idorden) {
+
+        swipeRefreshLayout.setRefreshing(true);
+        relativeLayout.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
+        lista.setVisibility(View.GONE);
 
         listadetalle = new ArrayList<>();
 
@@ -164,19 +215,20 @@ public class DetallesOrdenIguales extends Fragment {
                     //Si la lista es mayor que 0 adaptamos y hacemos el evento on click y long Click del la lista
                     if (listadetalle.size() > 0) {
 
-                        progressBar.setVisibility(View.GONE);
+                        swipeRefreshLayout.setRefreshing(false);
+                        relativeLayout.setVisibility(View.VISIBLE);
+                        lista.setVisibility(View.VISIBLE);
 
                         //Calcular el total
                         total.setText("$" + calcularTotal(listadetalle));
-
                         adapter = new DetalleOrdenAdapter(listadetalle);
-
                         lista.setAdapter(adapter);
 
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
-                        progressBar.setVisibility(View.GONE);
+
+                        swipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(rootView.getContext(), "Esta Orden no tiene detalles", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -185,7 +237,7 @@ public class DetallesOrdenIguales extends Fragment {
                         }
 
                         //acordarse de abrir la vista anterior
-                        Fragment fragment = new OrdenComanda();
+                        Fragment fragment = new PedidosCuenta();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
                         transaction.addToBackStack(null);
@@ -194,24 +246,28 @@ public class DetallesOrdenIguales extends Fragment {
 
                 } catch (JSONException ex) {
 
-                    progressBar.setVisibility(View.GONE);
+                    //excepcion json
+                    swipeRefreshLayout.setRefreshing(false);
+                    noconection.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
+
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+
+                swipeRefreshLayout.setRefreshing(false);
+                noconection.setVisibility(View.VISIBLE);
+                Toast.makeText(rootView.getContext(), Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
         })
         {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -250,11 +306,15 @@ public class DetallesOrdenIguales extends Fragment {
         //NumberFormat nFormat = NumberFormat.getInstance(Locale.ENGLISH);
         //DecimalFormat format = (DecimalFormat) nFormat;
         DecimalFormat format = new DecimalFormat();
-        format.setMaximumFractionDigits(2);
+        format.setMaximumFractionDigits(3);
 
         double aporte = calcularTotaldouble(listadetalle)/cantidad;
 
         return format.format(aporte);
     }
 
+    @Override
+    public void onRefresh() {
+        obtenerDetalles(idorden);
+    }
 }

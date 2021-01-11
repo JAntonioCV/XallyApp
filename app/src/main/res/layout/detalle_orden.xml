@@ -7,81 +7,99 @@
     android:padding="15dp"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textView2"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Detalle de Orden"
-        android:layout_marginBottom="4dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
-    <TextView
-        android:id="@+id/nombreplatillo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Nombre platillo"
-        android:layout_marginBottom="4dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
-
-    <TextView
-        android:id="@+id/existencia"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Existencia"
-        android:layout_marginBottom="4dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/cantidad"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:endIconMode="custom"
-        app:startIconDrawable="@drawable/ic_remove_circle"
-        app:endIconTint="@color/colorPrimary"
-        app:startIconTint="@color/colorPrimary"
-        app:endIconDrawable="@drawable/ic_add_circle"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        app:errorIconDrawable="@null"
-        app:errorEnabled="true">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/cantidadtxt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Cantidad"
-            android:inputType="number" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/notaopcional"
-        android:layout_width="match_parent"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/notatxt"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:hint="Nota (Opcional)" />
+            android:orientation="vertical">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Detalle de Orden"
+                android:layout_marginBottom="4dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+            <TextView
+                android:id="@+id/nombreplatillo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Nombre platillo"
+                android:layout_marginBottom="4dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+            <TextView
+                android:id="@+id/existencia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Existencia"
+                android:layout_marginBottom="4dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/cantidad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:endIconMode="custom"
+                app:startIconDrawable="@drawable/ic_remove_circle"
+                app:endIconTint="@color/colorPrimary"
+                app:startIconTint="@color/colorPrimary"
+                app:endIconDrawable="@drawable/ic_add_circle"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:errorIconDrawable="@null"
+                app:errorEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/cantidadtxt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLength="2"
+                    android:hint="Cantidad"
+                    android:inputType="number" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/notaopcional"
+                android:layout_width="match_parent"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:counterEnabled="true"
+                app:counterMaxLength="150"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/notatxt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLength="150"
+                    android:hint="Nota (Opcional)" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
 
-        <Button
-            android:id="@+id/btnordenar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textColor="@color/white"
-            android:layout_marginTop="16dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            app:cornerRadius="5dp"
-            android:text="Ordenar" />
+            <Button
+                android:id="@+id/btnordenar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textColor="@color/white"
+                android:layout_marginTop="16dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                app:cornerRadius="5dp"
+                android:text="Ordenar" />
+
+        </LinearLayout>
+
+
+    </ScrollView>
 
 </LinearLayout>

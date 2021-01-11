@@ -1,6 +1,7 @@
 package com.jantonioc.xalliapp.FragmentsCuenta;
 
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -19,6 +20,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -27,13 +30,16 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Orden;
 import com.jantonioc.xalliapp.Constans;
 import com.jantonioc.xalliapp.FragmentsOrdenes.Ordenes;
+import com.jantonioc.xalliapp.FragmentsPedidos.Pedidos;
 import com.jantonioc.xalliapp.MainActivity;
+import com.jantonioc.xalliapp.Principal;
 import com.jantonioc.xalliapp.VolleySingleton;
 import com.jantonioc.xalliapp.Adaptadores.PedidosAdapter;
 import com.jantonioc.xalliapp.R;
@@ -49,14 +55,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.jantonioc.xalliapp.MainActivity.navigationView;
+
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PedidosCuenta extends Fragment {
+public class PedidosCuenta extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     private View rootView;
     private RecyclerView lista;
-    private ProgressBar progressBar;
     private List<Orden> listaPedidos;
 
     private PedidosAdapter adapter;
@@ -68,6 +75,18 @@ public class PedidosCuenta extends Fragment {
     private Button calcular;
     private Integer cantidadClientes = 0;
     private RadioButton rbiguales,rbindividual;
+
+    private RelativeLayout relativeLayout;
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+
+    private Button btnreintentar;
+    private TextView txterror;
+
+    private boolean abierto = false;
+
+
+    AlertDialog builder;
 
 
     public PedidosCuenta() {
@@ -84,29 +103,43 @@ public class PedidosCuenta extends Fragment {
         toolbar.setTitle("Dividir Cuenta");
 
         //ocultar el floating boton
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
         //vista del fragment
         rootView = inflater.inflate(R.layout.fragment_pedidos, container, false);
+
+        relativeLayout = rootView.findViewById(R.id.relativePedidos);
+        noconection = rootView.findViewById(R.id.noconection);
+        relativeLayout.setVisibility(View.GONE);
+
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
+        txterror = rootView.findViewById(R.id.errorTitle);
+
+
         //recycler view
         lista = rootView.findViewById(R.id.recyclerViewPedidos);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
-        //progressbar
-        progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
+
 
         //swipe to refresh
         swipeRefreshLayout = rootView.findViewById(R.id.swipe);
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                listaPedidos();
-                adapter.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        PedidosCuenta.this.listaPedidos();
+
+                    }
+                });
             }
         });
 
@@ -117,10 +150,15 @@ public class PedidosCuenta extends Fragment {
     }
 
     private void listaPedidos() {
+
+        swipeRefreshLayout.setRefreshing(true);
+        relativeLayout.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
+
         //limpiar los pedidos al consultar al WS
         listaPedidos = new ArrayList<>();
 
-        String uri = Constans.URLBASE + "OrdenesWS/Ordenes";
+        String uri = Constans.URLBASE + "OrdenesWS/OrdenesCerradas";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -149,13 +187,14 @@ public class PedidosCuenta extends Fragment {
                                 obj.getInt("id"),
                                 obj.getInt("codigo"),
                                 fecha,
-                                hora,
+                                obj.getString("horaorden"),
                                 obj.getInt("estado"),
                                 obj.getInt("clienteid"),
                                 obj.getInt("meseroid"),
+                                obj.getInt("mesaid"),
                                 obj.getString("cliente"),
-                                obj.getString("mesero")
-
+                                obj.getString("mesero"),
+                                obj.getString("mesa")
                         );
 
                         //Agregando a la lista de orden
@@ -165,7 +204,8 @@ public class PedidosCuenta extends Fragment {
                     //Si la lista es mayor que 0 adaptamos y hacemos el evento on click
                     if (listaPedidos.size() > 0) {
 
-                        progressBar.setVisibility(View.GONE);
+                        swipeRefreshLayout.setRefreshing(false);
+                        relativeLayout.setVisibility(View.VISIBLE);
 
                         adapter = new PedidosAdapter(listaPedidos);
 
@@ -187,15 +227,16 @@ public class PedidosCuenta extends Fragment {
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
 
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(rootView.getContext(), "No se poseen ordenes para el dia de hoy", Toast.LENGTH_SHORT).show();
+                        navigationView.getMenu().getItem(0).getSubMenu().getItem(3).setChecked(false);
+                        swipeRefreshLayout.setRefreshing(false);
+                        Toast.makeText(rootView.getContext(), "No se poseen ordenes cerradas para el dia de hoy", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
                         for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
                             fm.popBackStack();
                         }
 
-                        Fragment fragment = new Ordenes();
+                        Fragment fragment = new Principal();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.add(R.id.content, fragment);
                         transaction.commit();
@@ -203,17 +244,19 @@ public class PedidosCuenta extends Fragment {
 
                 } catch (JSONException ex) {
 
-                    progressBar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
+                    noconection.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+
+                swipeRefreshLayout.setRefreshing(false);
+                noconection.setVisibility(View.VISIBLE);
+                Toast.makeText(rootView.getContext(), Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
         })
@@ -221,7 +264,7 @@ public class PedidosCuenta extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -245,21 +288,12 @@ public class PedidosCuenta extends Fragment {
     }
 
     private void clientes(int idorden) {
-        //obtener los detalles de la orden y limpiar las listas
-        //if(MainActivity.orden.getId() != idorden)
-        //{
-        obtenerDetalles(idorden);
+
         MainActivity.limpiarListas();
-        //}
-
-        //Abrir el fragmento del detalle de los platillos
-        Fragment fragment = new ListaCuentas();
-        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.content, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-
+        obtenerDetalles(idorden);
     }
+
+
 
     //obtener la fecha en forato legible para el usuario
     private static String ConvertirJsonFecha(String jsonfecha) {
@@ -282,6 +316,7 @@ public class PedidosCuenta extends Fragment {
 
 
     private void obtenerDetalles(int idOrden) {
+
         //MainActivity.orden.setId(idOrden);
         MainActivity.listadetalle = new ArrayList<>();
 
@@ -315,9 +350,22 @@ public class PedidosCuenta extends Fragment {
                         MainActivity.listadetalle.add(detalleDeOrden);
                     }
 
+                    if(MainActivity.listadetalle.size()>0)
+                    {
+                        //Abrir el fragmento del detalle de los platillos
+                        Fragment fragment = new ListaCuentas();
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.content, fragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                    else
+                    {
+                        Toast.makeText(rootView.getContext(), "Esta Orden no tiene detalles", Toast.LENGTH_SHORT).show();
+                    }
+
                 } catch (JSONException ex) {
 
-                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
                     ex.printStackTrace();
                 }
@@ -326,7 +374,6 @@ public class PedidosCuenta extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
                 Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
@@ -335,7 +382,7 @@ public class PedidosCuenta extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -343,53 +390,68 @@ public class PedidosCuenta extends Fragment {
     }
 
     private void dialogoCantidad(final int id) {
-        //Abrimos la modal agregar el nuevo detalle de orden
-        final AlertDialog builder = new AlertDialog.Builder(rootView.getContext()).create();
 
-        View view = getLayoutInflater().inflate(R.layout.cantidad_persona, null);
-        txtcantidad = view.findViewById(R.id.cantidad);
-        cantidadtxt = view.findViewById(R.id.cantidadtxt);
-        rbiguales = view.findViewById(R.id.rbiguales);
-        rbindividual = view.findViewById(R.id.rbindividuales);
-        calcular = view.findViewById(R.id.btncalcular);
+        if(!abierto)
+        {
+            abierto = true;
 
-        rbiguales.setChecked(true);
+            //Abrimos la modal agregar el nuevo detalle de orden
+            builder = new AlertDialog.Builder(rootView.getContext()).create();
 
-        //calcula
-        calcular.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //si los campos son validos
-                if (!validarCantidad()) {
-                    return;
-                } else {
-                    if(rbindividual.isChecked())
-                    {
-                        //pasa la cantidad y crea la lista de clientes y lista de productos por cliente
-                        cantidadClientes = Integer.valueOf(txtcantidad.getEditText().getText().toString().trim());
-                        //Creando la lista de clientes y la lista de lista
-                        MainActivity.crearClientes(cantidadClientes);
-                        MainActivity.crearListas(cantidadClientes);
-                        //manda el id de la orden
-                        clientes(id);
-                        builder.cancel();
+            View view = getLayoutInflater().inflate(R.layout.cantidad_persona, null);
+            txtcantidad = view.findViewById(R.id.cantidad);
+            cantidadtxt = view.findViewById(R.id.cantidadtxt);
+            rbiguales = view.findViewById(R.id.rbiguales);
+            rbindividual = view.findViewById(R.id.rbindividuales);
+            calcular = view.findViewById(R.id.btncalcular);
+
+            rbiguales.setChecked(true);
+
+            //calcula
+            calcular.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //si los campos son validos
+                    if (!validarCantidad()) {
+                        return;
+                    } else {
+                        if(rbindividual.isChecked())
+                        {
+                            //pasa la cantidad y crea la lista de clientes y lista de productos por cliente
+                            cantidadClientes = Integer.valueOf(txtcantidad.getEditText().getText().toString().trim());
+                            //Creando la lista de clientes y la lista de lista
+                            MainActivity.crearClientes(cantidadClientes);
+                            MainActivity.crearListas(cantidadClientes);
+                            //manda el id de la orden
+                            clientes(id);
+                            builder.cancel();
+
+                        }
+                        else
+                        {
+                            //pasa la cantidad y crea la lista de clientes y lista de productos por cliente
+                            cantidadClientes = Integer.valueOf(txtcantidad.getEditText().getText().toString().trim());
+                            detalles(id,cantidadClientes);
+                            builder.cancel();
+
+                        }
+
                     }
-                    else
-                    {
-                        //pasa la cantidad y crea la lista de clientes y lista de productos por cliente
-                        cantidadClientes = Integer.valueOf(txtcantidad.getEditText().getText().toString().trim());
-                        detalles(id,cantidadClientes);
-                        builder.cancel();
-                        
-                    }
-
                 }
-            }
-        });
+            });
 
-        builder.setView(view);
-        builder.create();
-        builder.show();
+            builder.setView(view);
+            builder.create();
+            builder.show();
+            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    abierto = false;
+                }
+            });
+        }
+
+
     }
 
     //valida el campo Cantidad
@@ -415,4 +477,8 @@ public class PedidosCuenta extends Fragment {
     }
 
 
+    @Override
+    public void onRefresh() {
+        listaPedidos();
+    }
 }

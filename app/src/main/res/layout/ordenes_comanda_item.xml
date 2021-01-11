@@ -19,11 +19,17 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Title, secondary and supporting text -->
+        <TextView
+            android:id="@+id/itemmesa"
+            android:layout_width="match_parent"
+            android:textStyle="bold"
+            android:layout_height="wrap_content"
+            android:text="Mesa"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
         <TextView
             android:id="@+id/itemcodigo"
             android:layout_width="match_parent"
-            android:textStyle="bold"
             android:layout_height="wrap_content"
             android:text="Codigo Orden: "
             android:textAppearance="@style/TextAppearance.AppCompat.Medium" />

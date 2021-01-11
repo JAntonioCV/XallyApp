@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jantonioc.ln.DetalleDeOrden;
@@ -23,13 +24,14 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ListaCuentas extends Fragment {
+public class ListaCuentas extends Fragment implements IObserverItem {
 
     //interfaz
     private ExpandableListView expandableListView;
     private CuentasAdapter cuentasAdapter;
     private HashMap<String, List<DetalleDeOrden>> listaclientedetalle;
     private View rootView;
+    private static TextView faltantes;
 
 
     public ListaCuentas() {
@@ -49,15 +51,24 @@ public class ListaCuentas extends Fragment {
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
+        MainActivity.cuenta=true;
+
         //vista
         rootView = inflater.inflate(R.layout.fragment_lista_cuentas, container, false);
 
         expandableListView = rootView.findViewById(R.id.expandiblelist);
 
+        faltantes = rootView.findViewById(R.id.itemfaltante);
+
+        faltantes.setText("Item faltantes: " + MainActivity.listadetalle.size());
+
         //obtiene los clientes
         this.listaclientedetalle = getclientes();
 
         //pasamos la lita de clientes y la lista de detalles
+
+        CuentasAdapter.itemTamaño = this;
+
         cuentasAdapter = new CuentasAdapter(getActivity(), MainActivity.listaClientes,listaclientedetalle);
 
         //adaptamos
@@ -80,4 +91,9 @@ public class ListaCuentas extends Fragment {
         return clienteDetalles;
     }
 
+    @Override
+    public void tamaño(int tamaño) {
+
+        faltantes.setText("Item faltantes: " + tamaño);
+    }
 }

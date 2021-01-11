@@ -3,16 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/add_comanda"
-        android:icon="@drawable/ic_add_a_photo_comanda"
-        android:title="Tomar foto"
+        android:id="@+id/save_phto"
+        android:icon="@drawable/ic_save"
+        android:title="Guardar foto"
         app:showAsAction="ifRoom"
         />
 
     <item
-        android:id="@+id/save_phto"
-        android:icon="@drawable/ic_save"
-        android:title="Guardar foto"
+        android:id="@+id/rotate"
+        android:icon="@drawable/ic_rotate_right"
+        android:title="Girar foto"
+        app:showAsAction="ifRoom"
+        />
+
+    <item
+        android:id="@+id/reload"
+        android:icon="@drawable/ic_cloud"
+        android:title="Recargar foto"
         app:showAsAction="ifRoom"
         />
 

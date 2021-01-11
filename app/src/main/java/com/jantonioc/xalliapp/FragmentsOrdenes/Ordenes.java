@@ -10,6 +10,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
@@ -61,11 +63,14 @@ public class Ordenes extends Fragment {
     private TextInputLayout txthora;
 
     //obtener los formatos de fecha y hora
-    private DateFormat hourFormat = new SimpleDateFormat("HH:mm:ss");
+    private DateFormat hourFormat = new SimpleDateFormat("h:mm:ss a");
     private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
     private RadioButton rbHuesped;
     private RadioButton rbvisitante;
+
+    private ProgressBar progressBar;
+    private LinearLayout linearLayout;
 
 
 
@@ -91,6 +96,8 @@ public class Ordenes extends Fragment {
         reload.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+                linearLayout.setVisibility(View.GONE);
+                progressBar.setVisibility(View.GONE);
                 obtenerCodigo();
                 return false;
             }
@@ -122,6 +129,12 @@ public class Ordenes extends Fragment {
 
         rbHuesped = rootView.findViewById(R.id.rbhuesped);
         rbvisitante = rootView.findViewById(R.id.rbvisitante);
+
+        linearLayout = rootView.findViewById(R.id.linearlayout);
+        progressBar = rootView.findViewById(R.id.progressBar);
+
+        linearLayout.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
 
         //poner el visitante seleccionado por defecto
         rbvisitante.setChecked(true);
@@ -155,12 +168,20 @@ public class Ordenes extends Fragment {
                     //si es visitante el selecionado
                     else if(rbvisitante.isChecked())
                     {
+                        //abrir las mesas en vez de las categorias
                         MainActivity.orden.setIdcliente(-1);
-                        Fragment fragment = new Categorias();
+                        MainActivity.orden.setCliente("Visitante");
+                        Fragment fragment = new Mesas();
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.content, fragment);
                         transaction.addToBackStack(null);
                         transaction.commit();
+
+//                        Fragment fragment = new Categorias();
+//                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+//                        transaction.replace(R.id.content, fragment);
+//                        transaction.addToBackStack(null);
+//                        transaction.commit();
                     }
                     else
                     {
@@ -179,6 +200,9 @@ public class Ordenes extends Fragment {
 
     //obtiene el codigo
     private void obtenerCodigo() {
+
+        progressBar.setVisibility(View.VISIBLE);
+
         String uri = URLBASE+"OrdenesWS/UltimoCodigo";
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
@@ -186,6 +210,9 @@ public class Ordenes extends Fragment {
 
                 //Si la respuesta es distinta de nula tenemos codigo de lo contrario no
                 if (response != null) {
+
+                    progressBar.setVisibility(View.GONE);
+                    linearLayout.setVisibility(View.VISIBLE);
 
                     txtcodigo.getEditText().setText(response);
                     txtfecha.getEditText().setText(dateFormat.format(date));
@@ -198,7 +225,11 @@ public class Ordenes extends Fragment {
 
 
                 } else {
+
                     Toast.makeText(rootView.getContext(), "Error al obtener el codigo, intente de nuevo", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
+                    linearLayout.setVisibility(View.VISIBLE);
+
                 }
             }
 
@@ -206,13 +237,15 @@ public class Ordenes extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
+                linearLayout.setVisibility(View.VISIBLE);
             }
         })
         {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 

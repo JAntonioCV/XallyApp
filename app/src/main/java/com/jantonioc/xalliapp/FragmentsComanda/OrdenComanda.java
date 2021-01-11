@@ -15,7 +15,10 @@ import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -24,9 +27,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.jantonioc.ln.Orden;
 import com.jantonioc.xalliapp.Constans;
 import com.jantonioc.xalliapp.FragmentsOrdenes.Ordenes;
+import com.jantonioc.xalliapp.FragmentsPedidos.Pedidos;
 import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.VolleySingleton;
 import com.jantonioc.xalliapp.Adaptadores.OrdenComandaAdapter;
@@ -46,12 +51,11 @@ import java.util.Map;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class OrdenComanda extends Fragment {
+public class OrdenComanda extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     //interfaz
     private View rootView;
     private RecyclerView lista;
-    private ProgressBar progressBar;
     private List<Orden> listaPedidos;
 
     private OrdenComandaAdapter adapter;
@@ -59,6 +63,13 @@ public class OrdenComanda extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
 
     private int idcliente;
+
+
+    private RelativeLayout relativeLayout;
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+
+    private Button btnreintentar;
 
 
     public OrdenComanda() {
@@ -75,18 +86,23 @@ public class OrdenComanda extends Fragment {
         toolbar.setTitle("Ordenes");
 
         //ocultar el floating boton
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
         //vista del fragment
         rootView = inflater.inflate(R.layout.fragment_pedidos, container, false);
+
+        relativeLayout = rootView.findViewById(R.id.relativePedidos);
+        noconection = rootView.findViewById(R.id.noconection);
+        relativeLayout.setVisibility(View.GONE);
+
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
+
         //recycler view
         lista = rootView.findViewById(R.id.recyclerViewPedidos);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
-        //progressbar
-        progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
 
         Bundle bundle = getArguments();
         idcliente = bundle.getInt("idCliente",0);
@@ -94,13 +110,19 @@ public class OrdenComanda extends Fragment {
         //swipe to refresh
         swipeRefreshLayout = rootView.findViewById(R.id.swipe);
         swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                listaPedidos(idcliente);
-                adapter.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        OrdenComanda.this.listaPedidos(idcliente);
+
+                    }
+                });
             }
         });
 
@@ -112,6 +134,10 @@ public class OrdenComanda extends Fragment {
 
     private void listaPedidos(int idcliente)
     {
+        swipeRefreshLayout.setRefreshing(true);
+        relativeLayout.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
+
         //limpiar los pedidos al consultar al WS
         listaPedidos= new ArrayList<>();
 
@@ -144,12 +170,14 @@ public class OrdenComanda extends Fragment {
                                 obj.getInt("id"),
                                 obj.getInt("codigo"),
                                 fecha,
-                                hora,
+                                obj.getString("horaorden"),
                                 obj.getInt("estado"),
                                 obj.getInt("clienteid"),
                                 obj.getInt("meseroid"),
+                                obj.getInt("mesaid"),
                                 obj.getString("cliente"),
-                                obj.getString("mesero")
+                                obj.getString("mesero"),
+                                obj.getString("mesa")
 
                         );
 
@@ -160,7 +188,8 @@ public class OrdenComanda extends Fragment {
                     //Si la lista es mayor que 0 adaptamos y hacemos el evento on click
                     if (listaPedidos.size() > 0) {
 
-                        progressBar.setVisibility(View.GONE);
+                        swipeRefreshLayout.setRefreshing(false);
+                        relativeLayout.setVisibility(View.VISIBLE);
 
                         adapter = new OrdenComandaAdapter(listaPedidos);
 
@@ -186,8 +215,8 @@ public class OrdenComanda extends Fragment {
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
                         //aun tengo que poner uno por defecto de bienvenida
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(rootView.getContext(), "No se poseen ordenes para el dia de hoy", Toast.LENGTH_SHORT).show();
+                        swipeRefreshLayout.setRefreshing(false);
+                        Toast.makeText(rootView.getContext(), "Este Cliente no posee ordenes", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
                         for (int i = 0; i < fm.getBackStackEntryCount(); ++i) {
@@ -202,16 +231,19 @@ public class OrdenComanda extends Fragment {
 
                 } catch (JSONException ex) {
 
-                    progressBar.setVisibility(View.GONE);
+                    //excepcion json
+                    swipeRefreshLayout.setRefreshing(false);
+                    noconection.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
+
+                swipeRefreshLayout.setRefreshing(false);
+                noconection.setVisibility(View.VISIBLE);
                 Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
@@ -220,7 +252,7 @@ public class OrdenComanda extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -252,5 +284,8 @@ public class OrdenComanda extends Fragment {
     }
 
 
-
+    @Override
+    public void onRefresh() {
+        listaPedidos(idcliente);
+    }
 }

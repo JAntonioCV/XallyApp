@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Base64;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,10 +30,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.ln.Orden;
 import com.jantonioc.xalliapp.Adaptadores.DetalleOrdenAdapter;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.FragmentsPedidos.DetallesDeOrden;
 import com.jantonioc.xalliapp.FragmentsPedidos.Pedidos;
 import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.R;
@@ -53,7 +57,7 @@ import java.util.Map;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DetallesDeOrdenFinalizar extends Fragment {
+public class DetallesDeOrdenFinalizar extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     //Variables del fragment
     private View rootView;
@@ -61,7 +65,6 @@ public class DetallesDeOrdenFinalizar extends Fragment {
     private DetalleOrdenAdapter adapter;
     private List<DetalleDeOrden> listadetalle;
     private ProgressBar progressBar;
-    private LinearLayout linearLayout;
 
 
     //boton y texto enviar
@@ -77,6 +80,17 @@ public class DetallesDeOrdenFinalizar extends Fragment {
     private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
 
+    //swipe to refresh
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private RelativeLayout relativeLayout;
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+
+    private Button btnreintentar;
+    private TextView txterror;
+
+
     public DetallesDeOrdenFinalizar() {
         // Required empty public constructor
     }
@@ -85,29 +99,34 @@ public class DetallesDeOrdenFinalizar extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//toolbar
+        //toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
         toolbar.setTitle("Detalles de Orden");
 
         //fab botton
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
         //vista
         rootView = inflater.inflate(R.layout.fragment_detalles_de_orden, container, false);
+
+        relativeLayout = rootView.findViewById(R.id.relative);
+        noconection = rootView.findViewById(R.id.noconection);
+        relativeLayout.setVisibility(View.GONE);
+
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
+        txterror = rootView.findViewById(R.id.errorTitle);
+
 
         //la lista
         lista = rootView.findViewById(R.id.recyclerViewDetalleOrden);
         lista.setHasFixedSize(true);
         lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
 
-        //linear layout
-        linearLayout = rootView.findViewById(R.id.linearlayout);
-        linearLayout.setVisibility(View.GONE);
-
         //progressbar
         progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
 
         //tex total y enviar modificaciones
         total = rootView.findViewById(R.id.total);
@@ -117,11 +136,28 @@ public class DetallesDeOrdenFinalizar extends Fragment {
         //obtenemos el idoden seleccionado
         idorden = getArguments().getInt("idorden", 0);
 
+        //swipe to refresh
+        swipeRefreshLayout = rootView.findViewById(R.id.swipe);
+        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
+        swipeRefreshLayout.setOnRefreshListener(this);
+
         btncerrar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //llamar al cerrar
                 cerrarOrden(idorden);
+            }
+        });
+
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        DetallesDeOrdenFinalizar.this.ObtenerDetalles(idorden);
+                    }
+                });
             }
         });
 
@@ -133,8 +169,9 @@ public class DetallesDeOrdenFinalizar extends Fragment {
 
     private void cerrarOrden(int idorden)
     {
-        linearLayout.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
+        relativeLayout.setVisibility(View.GONE);
+        lista.setVisibility(View.GONE);
 
         //Enviar la orden al server
         String uri = Constans.URLBASE+"OrdenesWS/CerrarOrden/" + idorden;
@@ -158,15 +195,20 @@ public class DetallesDeOrdenFinalizar extends Fragment {
                         transaction.commit();
 
                     } else {
+
                         progressBar.setVisibility(View.GONE);
-                        linearLayout.setVisibility(View.VISIBLE);
+                        relativeLayout.setVisibility(View.VISIBLE);
+                        lista.setVisibility(View.VISIBLE);
                         Toast.makeText(rootView.getContext(), mensaje, Toast.LENGTH_SHORT).show();
                     }
 
                 } catch (JSONException ex) {
+
                     progressBar.setVisibility(View.GONE);
-                    linearLayout.setVisibility(View.VISIBLE);
+                    relativeLayout.setVisibility(View.VISIBLE);
+                    lista.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
+
                 }
 
             }
@@ -174,8 +216,10 @@ public class DetallesDeOrdenFinalizar extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+
                 progressBar.setVisibility(View.GONE);
-                linearLayout.setVisibility(View.VISIBLE);
+                relativeLayout.setVisibility(View.VISIBLE);
+                lista.setVisibility(View.VISIBLE);
                 Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
             }
         })
@@ -183,7 +227,7 @@ public class DetallesDeOrdenFinalizar extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -192,6 +236,11 @@ public class DetallesDeOrdenFinalizar extends Fragment {
 
     //obtener las ordenes de un detalle
     private void ObtenerDetalles(final int idOrden) {
+
+        swipeRefreshLayout.setRefreshing(true);
+        relativeLayout.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
+        lista.setVisibility(View.GONE);
 
         listadetalle = new ArrayList<>();
 
@@ -228,8 +277,10 @@ public class DetallesDeOrdenFinalizar extends Fragment {
                     //Si la lista es mayor que 0 adaptamos y hacemos el evento on click y long Click del la lista
                     if (listadetalle.size() > 0) {
 
-                        progressBar.setVisibility(View.GONE);
-                        linearLayout.setVisibility(View.VISIBLE);
+                        swipeRefreshLayout.setRefreshing(false);
+                        relativeLayout.setVisibility(View.VISIBLE);
+                        lista.setVisibility(View.VISIBLE);
+
                         adapter = new DetalleOrdenAdapter(listadetalle);
                         //actualizamos el totl con la lista y apdatamos
                         total.setText("$" + calcularTotal(listadetalle));
@@ -238,8 +289,7 @@ public class DetallesDeOrdenFinalizar extends Fragment {
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
-                        progressBar.setVisibility(View.GONE);
-                        linearLayout.setVisibility(View.VISIBLE);
+                        swipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(rootView.getContext(), "Esta Orden no tiene detalles", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -256,18 +306,18 @@ public class DetallesDeOrdenFinalizar extends Fragment {
 
                 } catch (JSONException ex) {
 
-                    progressBar.setVisibility(View.GONE);
-                    linearLayout.setVisibility(View.VISIBLE);
+                    swipeRefreshLayout.setRefreshing(false);
+                    noconection.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
+
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
-                linearLayout.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false);
+                noconection.setVisibility(View.VISIBLE);
                 Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
 
             }
@@ -275,7 +325,7 @@ public class DetallesDeOrdenFinalizar extends Fragment {
         {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -298,4 +348,8 @@ public class DetallesDeOrdenFinalizar extends Fragment {
         return format.format(total);
     }
 
+    @Override
+    public void onRefresh() {
+        ObtenerDetalles(idorden);
+    }
 }

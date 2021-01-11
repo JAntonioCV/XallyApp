@@ -73,12 +73,14 @@ public class OrdenComandaAdapter extends RecyclerView.Adapter<OrdenComandaAdapte
             TextView hora = itemView.findViewById(R.id.itemhora);
             TextView estado = itemView.findViewById(R.id.itemestado);
             TextView mesero = itemView.findViewById(R.id.itemmesero);
+            TextView mesa = itemView.findViewById(R.id.itemmesa);
 
             codigo.setText("Codigo: " + obj.getCodigo());
             fecha.setText("Fecha: " + obj.getFechaorden());
             hora.setText("Hora: " + obj.getTiempoorden());
             estado.setText("Estado: "+Obtenerestado(obj.getEstado()));
             mesero.setText("Mesero:"+ obj.getMesero());
+            mesa.setText(obj.getMesa());
 
         }
 

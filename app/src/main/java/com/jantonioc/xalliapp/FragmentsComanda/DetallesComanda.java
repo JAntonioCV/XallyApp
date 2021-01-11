@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Base64;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,8 +27,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.jantonioc.ln.DetalleDeOrden;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.FragmentsPedidos.DetallesDeOrden;
+import com.jantonioc.xalliapp.MainActivity;
 import com.jantonioc.xalliapp.VolleySingleton;
 import com.jantonioc.xalliapp.Adaptadores.DetalleOrdenAdapter;
 import com.jantonioc.xalliapp.R;
@@ -44,21 +49,30 @@ import java.util.Map;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DetallesComanda extends Fragment {
+public class DetallesComanda extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     //interfaz
     private View rootView;
     private RecyclerView lista;
     private DetalleOrdenAdapter adapter;
-
-    private List<DetalleDeOrden> listadetalle;
-
     private ProgressBar progressBar;
+    private List<DetalleDeOrden> listadetalle;
 
     private Button btnenviar;
     private TextView total;
 
     private int idorden;
+
+    //swipe to refresh
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private RelativeLayout relativeLayout;
+    private RelativeLayout noconection;
+    private FloatingActionButton fab;
+
+    private Button btnreintentar;
+    private TextView txterror;
+
 
 
     public DetallesComanda() {
@@ -75,19 +89,27 @@ public class DetallesComanda extends Fragment {
         toolbar.setTitle("Detalle Ordenes");
 
         //fab boton
-        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
         fab.hide();
 
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_detalles_de_orden, container, false);
 
-        lista = rootView.findViewById(R.id.recyclerViewDetalleOrden);
-        lista.setHasFixedSize(true);
-        lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
+        relativeLayout = rootView.findViewById(R.id.relative);
+        noconection = rootView.findViewById(R.id.noconection);
+        relativeLayout.setVisibility(View.GONE);
+
+        //de la vista de no conexion
+        btnreintentar = rootView.findViewById(R.id.btnrein);
+        txterror = rootView.findViewById(R.id.errorTitle);
 
         //progressbar
         progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
+
+        lista = rootView.findViewById(R.id.recyclerViewDetalleOrden);
+        lista.setHasFixedSize(true);
+        lista.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
 
         total = rootView.findViewById(R.id.total);
 
@@ -100,6 +122,10 @@ public class DetallesComanda extends Fragment {
             @Override
             public void onClick(View v) {
 
+                progressBar.setVisibility(View.VISIBLE);
+                relativeLayout.setVisibility(View.GONE);
+                lista.setVisibility(View.GONE);
+
                 Fragment fragment = new AgregarComanda();
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.content, fragment);
@@ -111,7 +137,24 @@ public class DetallesComanda extends Fragment {
 
         //obteniendo el id de la orden selecionada
         Bundle bundle = getArguments();
-        int idorden = bundle.getInt("idOrden",0);
+        idorden = bundle.getInt("idOrden",0);
+
+        //swipe to refresh
+        swipeRefreshLayout = rootView.findViewById(R.id.swipe);
+        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
+        swipeRefreshLayout.setOnRefreshListener(this);
+
+        btnreintentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeRefreshLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        DetallesComanda.this.obtenerDetalles(idorden);
+                    }
+                });
+            }
+        });
 
         //obtenemos los detalles
         obtenerDetalles(idorden);
@@ -121,6 +164,11 @@ public class DetallesComanda extends Fragment {
     }
 
     private void obtenerDetalles(int idorden) {
+
+        swipeRefreshLayout.setRefreshing(true);
+        relativeLayout.setVisibility(View.GONE);
+        noconection.setVisibility(View.GONE);
+        lista.setVisibility(View.GONE);
 
         listadetalle = new ArrayList<>();
 
@@ -157,7 +205,9 @@ public class DetallesComanda extends Fragment {
                     //Si la lista es mayor que 0 adaptamos y hacemos el evento on click y long Click del la lista
                     if (listadetalle.size() > 0) {
 
-                        progressBar.setVisibility(View.GONE);
+                        relativeLayout.setVisibility(View.VISIBLE);
+                        lista.setVisibility(View.VISIBLE);
+                        swipeRefreshLayout.setRefreshing(false);
 
                         //Calcular el total
                         total.setText("$" + calcularTotal(listadetalle));
@@ -169,7 +219,7 @@ public class DetallesComanda extends Fragment {
                     }
                     //Si no es mayor regresamos al fragmento anterior y sacamos el fragment actual de la pila
                     else {
-                        progressBar.setVisibility(View.GONE);
+                        swipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(rootView.getContext(), "Esta Orden no tiene detalles", Toast.LENGTH_SHORT).show();
 
                         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -187,25 +237,26 @@ public class DetallesComanda extends Fragment {
 
                 } catch (JSONException ex) {
 
-                    progressBar.setVisibility(View.GONE);
+                    //excepcion json
+                    swipeRefreshLayout.setRefreshing(false);
+                    noconection.setVisibility(View.VISIBLE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
-                    ex.printStackTrace();
                 }
             }
 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressBar.setVisibility(View.GONE);
+                swipeRefreshLayout.setRefreshing(false);
+                noconection.setVisibility(View.VISIBLE);
                 Toast.makeText(rootView.getContext(),Constans.errorVolley(error), Toast.LENGTH_SHORT).show();
-
             }
         })
         {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -226,4 +277,8 @@ public class DetallesComanda extends Fragment {
         return format.format(total);
     }
 
+    @Override
+    public void onRefresh() {
+        obtenerDetalles(idorden);
+    }
 }

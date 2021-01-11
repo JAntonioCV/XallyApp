@@ -117,11 +117,11 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
         {
             if(estado == false && fromservice == false)
             {
-                return "Sin Enviar";
+                return "Nuevo";
             }
             else if(estado == false && fromservice == true )
             {
-                return "Ordenado";
+                return "Finalizado";
             }
 
             return "Atendido";
@@ -135,10 +135,11 @@ public class DetalleOrdenAdapter extends RecyclerView.Adapter<DetalleOrdenAdapte
             }
             else if(estado == false && fromservice == true )
             {
-                return Color.GREEN;
+                //crear un colo en Rgb
+                return Color.rgb(0,123,255);
             }
 
-            return Color.GRAY;
+            return Color.GREEN;
         }
 
 

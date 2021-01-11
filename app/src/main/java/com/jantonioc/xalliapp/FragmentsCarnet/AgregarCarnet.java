@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -18,8 +19,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -37,10 +40,13 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.github.chrisbanes.photoview.PhotoView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jantonioc.ln.ResultadoWS;
 import com.jantonioc.xalliapp.Constans;
+import com.jantonioc.xalliapp.LoginActivity;
 import com.jantonioc.xalliapp.MainActivity;
+import com.jantonioc.xalliapp.PhotoClass;
 import com.jantonioc.xalliapp.R;
 import com.jantonioc.xalliapp.Retrofit.NetworkClient;
 import com.jantonioc.xalliapp.Retrofit.IWebServicesAPI;
@@ -53,6 +59,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.Map;
 
 import okhttp3.MediaType;
@@ -68,11 +75,12 @@ import static com.jantonioc.xalliapp.Constans.URLBASE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AgregarCarnet extends Fragment {
+public class AgregarCarnet extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     private View rootView;
-    private ImageView imagencomanda;
+    private PhotoView photoView;
     private ProgressBar progressBar;
+    private FloatingActionButton fabFoto;
 
     //Permisos
     private static final int REQUEST_CAMERA_AND_WRITE_EXTERNAL = 10;
@@ -94,6 +102,9 @@ public class AgregarCarnet extends Fragment {
     boolean nuevaimagen=false;
     boolean imagen = false;
     boolean ruta = true;
+    boolean reload = true;
+
+    private Uri uriimage;
 
 
     public AgregarCarnet() {
@@ -118,13 +129,18 @@ public class AgregarCarnet extends Fragment {
         //al seleccionar una de las opciones del toolbar
         switch(item.getItemId())
         {
-            case R.id.add_comanda:
-                tomarfoto();
-                return true;
-
             case R.id.save_phto:
                 uploadImage();
                 return  true;
+
+            case R.id.reload:
+                path="";
+                consultarFoto();
+                return true;
+            case R.id.rotate:
+                photoView.setRotation(photoView.getRotation()+ 90);
+                return true;
+
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -139,28 +155,40 @@ public class AgregarCarnet extends Fragment {
 
         if(!path.isEmpty() && ruta)
         {
-            guardar.setEnabled(true);
-            guardar.getIcon().setAlpha(255);
+            guardar.setVisible(true);
         }
         else
         {
-            guardar.setEnabled(false);
-            guardar.getIcon().setAlpha(130);
+            guardar.setVisible(false);
         }
 
-        MenuItem tomar = menu.findItem(R.id.add_comanda);
+        MenuItem rotar = menu.findItem(R.id.rotate);
+
+        if(imagen)
+        {
+            rotar.setVisible(true);
+        }
+        else
+        {
+            rotar.setVisible(false);
+        }
 
         if(permisos && imagen)
         {
-            tomar.setEnabled(true);
-            tomar.getIcon().setAlpha(255);
+            fabFoto.setVisibility(View.VISIBLE);
         }
         else
         {
-            tomar.setEnabled(false);
-            tomar.getIcon().setAlpha(130);
+            fabFoto.setVisibility(View.GONE);
         }
 
+        MenuItem recargar = menu.findItem(R.id.reload);
+
+        if (reload) {
+            recargar.setVisible(true);
+        } else {
+            recargar.setVisible(false);
+        }
 
         super.onPrepareOptionsMenu(menu);
     }
@@ -171,7 +199,7 @@ public class AgregarCarnet extends Fragment {
                              Bundle savedInstanceState) {
         //Cambiando el toolbar
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-        toolbar.setTitle("Guardar Carnet");
+        toolbar.setTitle("Carnet");
 
         //ocualtando el fab
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
@@ -181,11 +209,19 @@ public class AgregarCarnet extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_agregar_comanda, container, false);
 
         //imagen
-        imagencomanda = rootView.findViewById(R.id.imagencomanda);
+        photoView = rootView.findViewById(R.id.pview);
 
         progressBar = rootView.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
 
-        progressBar.setVisibility(View.VISIBLE);
+        fabFoto = rootView.findViewById(R.id.fabfoto);
+
+        fabFoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tomarfoto();
+            }
+        });
 
         //consulta si tiene foto asociado a esa orden
         consultarFoto();
@@ -198,6 +234,11 @@ public class AgregarCarnet extends Fragment {
 
     private void consultarFoto() {
 
+        imagen=false;
+        if (getActivity() != null) {
+            requireActivity().invalidateOptionsMenu();
+        }
+        progressBar.setVisibility(View.VISIBLE);
         String uri = URLBASE+"CarnetWS/consultarFoto/"+ MainActivity.orden.getId();
         StringRequest request = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
             @Override
@@ -208,17 +249,20 @@ public class AgregarCarnet extends Fragment {
 
                     //respuesta de parte del servidor
                     String ruta = jsonObject.getString("Mensaje");
+                    ruta = URLBASE + ruta;
                     Boolean resultado = jsonObject.getBoolean("Resultado");
 
                     if (resultado) {
                         nuevaimagen = true;
                         //memory policy y network pilicy para que no este siempre mostrando la misma foto
-                        Picasso.with(getContext()).load(ruta).networkPolicy(NetworkPolicy.NO_CACHE).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerInside().into(imagencomanda, new com.squareup.picasso.Callback() {
+                        Picasso.with(getContext()).load(ruta).networkPolicy(NetworkPolicy.NO_CACHE).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerInside().into(photoView, new com.squareup.picasso.Callback() {
                             @Override
                             public void onSuccess() {
                                 //si se procesa la descarga de la imagen
                                 imagen = true;
-                                requireActivity().invalidateOptionsMenu();
+                                if (getActivity() != null) {
+                                    requireActivity().invalidateOptionsMenu();
+                                }
                                 progressBar.setVisibility(View.GONE);
                             }
 
@@ -227,7 +271,9 @@ public class AgregarCarnet extends Fragment {
                                 //si falla
                                 imagen = true;
                                 progressBar.setVisibility(View.GONE);
-                                requireActivity().invalidateOptionsMenu();
+                                if (getActivity() != null) {
+                                    requireActivity().invalidateOptionsMenu();
+                                }
                                 Toast.makeText(rootView.getContext(), "Error al obtener la imagen", Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -235,7 +281,10 @@ public class AgregarCarnet extends Fragment {
                     {
                         //Muestro la imagen aunque no cargue
                         imagen = true;
-                        requireActivity().invalidateOptionsMenu();
+                        photoView.setImageResource(R.drawable.sinimage);
+                        if (getActivity() != null) {
+                            requireActivity().invalidateOptionsMenu();
+                        }
                         progressBar.setVisibility(View.GONE);
                     }
 
@@ -251,7 +300,7 @@ public class AgregarCarnet extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(rootView.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(rootView.getContext(), Constans.errorVolley(error), Toast.LENGTH_LONG).show();
 
             }
         })
@@ -259,7 +308,7 @@ public class AgregarCarnet extends Fragment {
             //metodo para la autenficacion basica en el servidor
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                return Constans.getToken();
+                return MainActivity.getToken();
             }
         };
 
@@ -280,7 +329,9 @@ public class AgregarCarnet extends Fragment {
                 requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_AND_WRITE_EXTERNAL);
             }
         }
-        requireActivity().invalidateOptionsMenu();
+        if (getActivity() != null) {
+            requireActivity().invalidateOptionsMenu();
+        }
     }
 
     //abrir la cama para tomar fotos
@@ -317,8 +368,10 @@ public class AgregarCarnet extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             String authorities = getContext().getPackageName() + ".provider";
             Uri imageUri = FileProvider.getUriForFile(getContext(), authorities, imagen);
+            uriimage = imageUri;
             intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         } else {
+            uriimage = Uri.fromFile(imagen);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imagen));
         }
 
@@ -345,11 +398,29 @@ public class AgregarCarnet extends Fragment {
 
                     //convertimos a bitmar y lo pasamos a la imageview
                     bitmap = BitmapFactory.decodeFile(path);
-                    imagencomanda.setImageBitmap(bitmap);
-                    requireActivity().invalidateOptionsMenu();
+
+                    try {
+
+                        photoView.setImageBitmap(PhotoClass.handleSamplingAndRotationBitmap(rootView.getContext(), uriimage));
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    //imagencomanda.setImageBitmap(bitmap);
+                    if (getActivity() != null) {
+                        requireActivity().invalidateOptionsMenu();
+                    }
                     break;
             }
         }
+    }
+
+    public static Bitmap rotateImage(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
+                matrix, true);
     }
 
     @Override
@@ -363,7 +434,9 @@ public class AgregarCarnet extends Fragment {
                 } else {
                     permisos = false;
                 }
-                requireActivity().invalidateOptionsMenu();
+                if (getActivity() != null) {
+                    requireActivity().invalidateOptionsMenu();
+                }
                 break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -375,8 +448,10 @@ public class AgregarCarnet extends Fragment {
     {
         imagen = false;
         ruta = false;
-        requireActivity().invalidateOptionsMenu();
-
+        reload = false;
+        if (getActivity() != null) {
+            requireActivity().invalidateOptionsMenu();
+        }
         if(nuevaimagen)
         {
             //Mostrar un dialog si realmente quiere actualizar o no
@@ -397,11 +472,15 @@ public class AgregarCarnet extends Fragment {
                 public void onClick(DialogInterface dialog, int which) {
                     imagen = true;
                     ruta = true;
-                    requireActivity().invalidateOptionsMenu();
+                    reload = true;
+                    if (getActivity() != null) {
+                        requireActivity().invalidateOptionsMenu();
+                    }
                     return;
                 }
             });
 
+            builder.setCancelable(false);
             builder.create();
             builder.show();
         }
@@ -415,7 +494,7 @@ public class AgregarCarnet extends Fragment {
     private void enviarimg()
     {
         //ocultar la img
-        imagencomanda.setVisibility(View.GONE);
+        photoView.setVisibility(View.GONE);
         //poner viisble el progress
         progressBar.setVisibility(View.VISIBLE);
         //obtener un nuevo archivo con la direcion
@@ -424,7 +503,7 @@ public class AgregarCarnet extends Fragment {
         //obtener la instancia de retrofit
         Retrofit retrofit = NetworkClient.getRetrofit();
         //cabecera del tipo de dato
-        RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"),file);
+        final RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"),file);
         //la foto para que sea enviada como un formulario
         MultipartBody.Part photo = MultipartBody.Part.createFormData("photo",file.getName(),requestBody);
         //Creacioin de la interfaz de retrofit para traer los servicios
@@ -452,21 +531,45 @@ public class AgregarCarnet extends Fragment {
                         transaction.commit();
                     } else {
                         //si es falso
-                        imagencomanda.setVisibility(View.VISIBLE);
+                        photoView.setVisibility(View.VISIBLE);
                         Toast.makeText(rootView.getContext(), msj, Toast.LENGTH_SHORT).show();
+                        imagen = true;
+                        ruta = true;
+                        if (getActivity() != null) {
+                            requireActivity().invalidateOptionsMenu();
+                        }
                     }
+                }
+                else
+                {
+                    photoView.setVisibility(View.VISIBLE);
+                    imagen = true;
+                    ruta = true;
+                    if (getActivity() != null) {
+                        requireActivity().invalidateOptionsMenu();
+                    }
+                    Toast.makeText(rootView.getContext(),"Error del servidor razón : " + response.message() ,Toast.LENGTH_SHORT).show();
                 }
 
             }
             //si falla
             @Override
             public void onFailure(Call<ResultadoWS> call, Throwable t) {
+                imagen = true;
+                ruta = true;
+                if (getActivity() != null) {
+                    requireActivity().invalidateOptionsMenu();
+                }
                 progressBar.setVisibility(View.GONE);
-                imagencomanda.setVisibility(View.VISIBLE);
-                Toast.makeText(rootView.getContext(),t.getMessage(), Toast.LENGTH_SHORT).show();
+                photoView.setVisibility(View.VISIBLE);
+                Toast.makeText(rootView.getContext(),Constans.errorRetrofit(t), Toast.LENGTH_SHORT).show();
 
             }
         });
     }
 
+    @Override
+    public void onRefresh() {
+        consultarFoto();
+    }
 }
