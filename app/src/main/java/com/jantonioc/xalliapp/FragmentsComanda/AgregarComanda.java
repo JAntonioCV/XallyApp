@@ -105,6 +105,7 @@ public class AgregarComanda extends Fragment{
     boolean imagen = false;
     boolean ruta = true;
     boolean reload = true;
+    boolean rotate = true;
 
     private Uri uriimage;
 
@@ -164,7 +165,7 @@ public class AgregarComanda extends Fragment{
 
         MenuItem rotar = menu.findItem(R.id.rotate);
 
-        if(imagen)
+        if(imagen && rotate)
         {
             rotar.setVisible(true);
         }
@@ -264,6 +265,7 @@ public class AgregarComanda extends Fragment{
                             public void onSuccess() {
                                 //si se procesa la descarga de la imagen
                                 imagen = true;
+                                rotate = true;
                                 if (getActivity() != null) {
                                     requireActivity().invalidateOptionsMenu();
                                 }
@@ -285,6 +287,7 @@ public class AgregarComanda extends Fragment{
                     {
                         //Muestro la imagen aunque no cargue
                         imagen = true;
+                        rotate = false;
                         photoView.setImageResource(R.drawable.sinimage);
                         if (getActivity() != null) {
                             requireActivity().invalidateOptionsMenu();
@@ -293,7 +296,6 @@ public class AgregarComanda extends Fragment{
                     }
 
                 } catch (JSONException ex) {
-
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
                     ex.printStackTrace();
@@ -410,8 +412,10 @@ public class AgregarComanda extends Fragment{
                         e.printStackTrace();
                     }
 
-                    //imagencomanda.setImageBitmap(bitmap);
+                    rotate = true;
+
                     if (getActivity() != null) {
+
                         requireActivity().invalidateOptionsMenu();
                     }
                     break;

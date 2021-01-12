@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static boolean dashboard = false;
     public static boolean cuenta = false;
 
+    //info user
     public static final RespuestaLogin user = new RespuestaLogin();
 
     //token
@@ -81,8 +82,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     //preferencias compartidas
     private static EncryptedSharedPreferences sharedPreferences;
+
     private static final String USER="user";
     private static final String PASS="pass";
+
 
 
     @Override
@@ -151,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         View headerView = navigationView.getHeaderView(0);
         TextView nombre = headerView.findViewById(R.id.nav_nombre);
         TextView rol = headerView.findViewById(R.id.nav_rol);
+
         nombre.setText(user.getNombreCompleto());
         rol.setText(user.getRol());
 

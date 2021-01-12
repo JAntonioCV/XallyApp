@@ -75,7 +75,7 @@ import static com.jantonioc.xalliapp.Constans.URLBASE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AgregarCarnet extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class AgregarCarnet extends Fragment {
 
     private View rootView;
     private PhotoView photoView;
@@ -103,6 +103,7 @@ public class AgregarCarnet extends Fragment implements SwipeRefreshLayout.OnRefr
     boolean imagen = false;
     boolean ruta = true;
     boolean reload = true;
+    boolean rotate = true;
 
     private Uri uriimage;
 
@@ -164,7 +165,7 @@ public class AgregarCarnet extends Fragment implements SwipeRefreshLayout.OnRefr
 
         MenuItem rotar = menu.findItem(R.id.rotate);
 
-        if(imagen)
+        if(imagen && rotate)
         {
             rotar.setVisible(true);
         }
@@ -260,6 +261,7 @@ public class AgregarCarnet extends Fragment implements SwipeRefreshLayout.OnRefr
                             public void onSuccess() {
                                 //si se procesa la descarga de la imagen
                                 imagen = true;
+                                rotate = true;
                                 if (getActivity() != null) {
                                     requireActivity().invalidateOptionsMenu();
                                 }
@@ -281,6 +283,7 @@ public class AgregarCarnet extends Fragment implements SwipeRefreshLayout.OnRefr
                     {
                         //Muestro la imagen aunque no cargue
                         imagen = true;
+                        rotate = false;
                         photoView.setImageResource(R.drawable.sinimage);
                         if (getActivity() != null) {
                             requireActivity().invalidateOptionsMenu();
@@ -289,7 +292,6 @@ public class AgregarCarnet extends Fragment implements SwipeRefreshLayout.OnRefr
                     }
 
                 } catch (JSONException ex) {
-
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(rootView.getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
                     ex.printStackTrace();
@@ -407,20 +409,14 @@ public class AgregarCarnet extends Fragment implements SwipeRefreshLayout.OnRefr
                         e.printStackTrace();
                     }
 
-                    //imagencomanda.setImageBitmap(bitmap);
+                    rotate = true;
+
                     if (getActivity() != null) {
                         requireActivity().invalidateOptionsMenu();
                     }
                     break;
             }
         }
-    }
-
-    public static Bitmap rotateImage(Bitmap source, float angle) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(angle);
-        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
-                matrix, true);
     }
 
     @Override
@@ -566,10 +562,5 @@ public class AgregarCarnet extends Fragment implements SwipeRefreshLayout.OnRefr
 
             }
         });
-    }
-
-    @Override
-    public void onRefresh() {
-        consultarFoto();
     }
 }
